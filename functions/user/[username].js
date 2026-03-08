@@ -240,12 +240,23 @@ function renderPaginator(totalPages, containerId) {
 async function changeAvatar() {
   const toonId = prompt('Enter toon ID to use as avatar:');
   if (!toonId) return;
-  const { error } = await db.auth.updateUser({
+
+  const { error: authError } = await db.auth.updateUser({
     data: { avatar_toon: toonId }
   });
-  if (!error) {
+  console.log('auth update error:', authError);
+
+  const { error: profileError } = await db
+    .from('profiles')
+    .update({ avatar_toon: toonId })
+    .eq('username', PROFILE_USERNAME);
+  console.log('profile update error:', profileError);
+
+  if (!authError && !profileError) {
     document.getElementById('profile_avatar').src =
       'https://ytyhhmwnnlkhhpvsurlm.supabase.co/storage/v1/object/public/previews/' + toonId + '_100.gif';
+  } else {
+    alert('Error saving avatar: ' + (authError?.message || profileError?.message));
   }
 }
 
