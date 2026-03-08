@@ -142,46 +142,16 @@ function renderToons(toons) {
     const frameLabel = frameCount === 1 ? '1 frame' : '<b>' + frameCount + '</b> frames';
 
     return '<div class="toon_preview toon_preview_' + toon.id + '">' +
-    '<div class="toon_image">' +
+      '<div class="toon_image">' +
         '<a href="/toon/' + toon.id + '" title="' + title + '">' +
-        '<img src="https://ytyhhmwnnlkhhpvsurlm.supabase.co/storage/v1/object/public/previews/' + toon.id + '_100.gif" width="200" height="100" alt="' + title + '"/>' +
+          '<img src="https://ytyhhmwnnlkhhpvsurlm.supabase.co/storage/v1/object/public/previews/' + toon.id + '_100.gif" width="200" height="100" alt="' + title + '"/>' +
         '</a>' +
-    '</div>' +
-    '<div class="toon_name"><a class="link" href="/toon/' + toon.id + '">' + title + '</a></div>' +
-    '<div class="toon_tagline">' + frameLabel + '</div>' +
-    '<div class="toon_tagline"><span class="grayb">No comments</span></div>' +
+      '</div>' +
+      '<div class="toon_name"><a class="link" href="/toon/' + toon.id + '">' + title + '</a></div>' +
+      '<div class="toon_tagline">' + frameLabel + '</div>' +
+      '<div class="toon_tagline"><span class="grayb">No comments</span></div>' +
     '</div>';
   }).join('');
-
-  // Store frames data and render previews
-  toons.forEach(toon => {
-    const canvas = document.querySelector('.toon_canvas[data-id="' + toon.id + '"]');
-    if (!canvas) return;
-    const frames = Array.isArray(toon.frames) ? toon.frames : (toon.frames ? Object.values(toon.frames) : []);
-    if (!frames.length) return;
-    try { drawFrame(canvas, frames[0]); } catch(e) {}
-  });
-}
-
-function drawFrame(canvas, frame) {
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width, h = canvas.height;
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, w, h);
-  if (!frame || !frame.strokes) return;
-  frame.strokes.forEach(function(stroke) {
-    if (!stroke.points || stroke.points.length < 2) return;
-    ctx.beginPath();
-    ctx.strokeStyle = stroke.color || '#000000';
-    ctx.lineWidth = (stroke.size || 2) * (w / 500);
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.moveTo(stroke.points[0].x * w, stroke.points[0].y * h);
-    for (var i = 1; i < stroke.points.length; i++) {
-      ctx.lineTo(stroke.points[i].x * w, stroke.points[i].y * h);
-    }
-    ctx.stroke();
-  });
 }
 
 function renderPaginator(totalPages, containerId) {
