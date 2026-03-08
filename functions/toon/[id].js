@@ -69,6 +69,26 @@ export async function onRequestGet(context) {
     }
   }
 
+  // Check if continued from another toon
+  let continuedFromHtml = '';
+  if (toon.continued_from) {
+    const origToons = await supabase(`/animations?id=eq.${toon.continued_from}&select=id,title,user_id`);
+    if (origToons && origToons.length > 0) {
+      const orig = origToons[0];
+      let origAuthor = 'unknown';
+      if (orig.user_id) {
+        const origUser = await rpc('get_user_by_id', { p_user_id: orig.user_id });
+        if (origUser && origUser.length > 0) origAuthor = origUser[0].username || 'unknown';
+      }
+      const origTitle = orig.title || 'Untitled';
+      continuedFromHtml = `<div style="font-size:9pt; margin-top:5px;">
+        Original: <a href="/toon/${orig.id}" class="noh" title="${origTitle} (${origAuthor})">
+          &#x25ce; ${origTitle}
+        </a> by <a href="/user/${origAuthor}" class="username foreign">${origAuthor}</a>
+      </div>`;
+    }
+  }
+
   const frames = Array.isArray(toon.frames) ? toon.frames : (toon.frames ? Object.values(toon.frames) : []);
   const frameCount = frames.length || 1;
   const title = toon.title || 'Untitled';
@@ -136,6 +156,7 @@ export async function onRequestGet(context) {
               <a href="/user/${authorUsername}" class="username foreign">${authorUsername}</a>
             </div>
             <div class="date">${createdAt}</div>
+            ${continuedFromHtml}
           </div>
 
           <div class="prizes"></div>
@@ -332,7 +353,6 @@ async function postComment() {
 function handleLike() {
   db.auth.getUser().then(({ data: { user } }) => {
     if (!user) { showAuth('login'); return; }
-    // Like logic placeholder
     alert('Like feature coming soon!');
   });
 }

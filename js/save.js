@@ -98,56 +98,30 @@ async function saveAnimation() {
     const { data: { user }, error: userError } = await db.auth.getUser();
     if (userError || !user) throw new Error('You must be logged in to save.');
 
-    let animId;
+    // 2. Always insert as a new animation under the current user
+    const insertData = {
+      user_id: user.id,
+      title,
+      keywords,
+      description,
+      is_draft: isDraft,
+      frames: frames
+    };
 
+    // If this is a continue, store the original toon's ID as a reference
     if (window.CONTINUE_ID) {
-      // ---- UPDATE existing animation ----
-
-      // Verify the toon belongs to this user before updating
-      const { data: existing, error: fetchError } = await db
-        .from('animations')
-        .select('id, user_id')
-        .eq('id', window.CONTINUE_ID)
-        .single();
-
-      if (fetchError || !existing) throw new Error('Could not find original animation.');
-      if (existing.user_id !== user.id) throw new Error('You do not own this animation.');
-
-      const { error: updateError } = await db
-        .from('animations')
-        .update({
-          title,
-          keywords,
-          description,
-          is_draft: isDraft,
-          frames: frames
-        })
-        .eq('id', window.CONTINUE_ID);
-
-      if (updateError) throw updateError;
-
-      animId = window.CONTINUE_ID;
-
-    } else {
-      // ---- INSERT new animation ----
-
-      const { data: anim, error: insertError } = await db
-        .from('animations')
-        .insert({
-          user_id: user.id,
-          title,
-          keywords,
-          description,
-          is_draft: isDraft,
-          frames: frames
-        })
-        .select('id')
-        .single();
-
-      if (insertError) throw insertError;
-
-      animId = anim.id;
+      insertData.continued_from = window.CONTINUE_ID;
     }
+
+    const { data: anim, error: insertError } = await db
+      .from('animations')
+      .insert(insertData)
+      .select('id')
+      .single();
+
+    if (insertError) throw insertError;
+
+    const animId = anim.id;
 
     status.textContent = 'Generating previews...';
 
