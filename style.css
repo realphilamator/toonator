@@ -494,3 +494,12 @@ ul.share li {
 .clear {
     clear: both;
 }
+
+.gray {
+    background: #eeeeee;
+}
+
+.last_comments {
+    height: 40px;
+    overflow: hidden;
+}
