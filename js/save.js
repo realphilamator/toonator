@@ -132,8 +132,8 @@ async function saveAnimation() {
     status.textContent = 'Uploading previews...';
 
     await Promise.all([
-      upload(blob200, `${animId}100.gif`),
-      upload(blob40,  `${animId}40.gif`)
+        upload(blob200, `${animId}_100.gif`),
+        upload(blob40,  `${animId}_40.gif`)
     ]);
 
     status.textContent = 'Saved!';

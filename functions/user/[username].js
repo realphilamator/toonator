@@ -142,14 +142,14 @@ function renderToons(toons) {
     const frameLabel = frameCount === 1 ? '1 frame' : '<b>' + frameCount + '</b> frames';
 
     return '<div class="toon_preview toon_preview_' + toon.id + '">' +
-      '<div class="toon_image">' +
+    '<div class="toon_image">' +
         '<a href="/toon/' + toon.id + '" title="' + title + '">' +
-          '<canvas class="toon_canvas" data-id="' + toon.id + '" width="200" height="100"></canvas>' +
+        '<img src="https://ytyhhmwnnlkhhpvsurlm.supabase.co/storage/v1/object/public/previews/' + toon.id + '_100.gif" width="200" height="100" alt="' + title + '"/>' +
         '</a>' +
-      '</div>' +
-      '<div class="toon_name"><a class="link" href="/toon/' + toon.id + '">' + title + '</a></div>' +
-      '<div class="toon_tagline">' + frameLabel + '</div>' +
-      '<div class="toon_tagline"><span class="grayb">No comments</span></div>' +
+    '</div>' +
+    '<div class="toon_name"><a class="link" href="/toon/' + toon.id + '">' + title + '</a></div>' +
+    '<div class="toon_tagline">' + frameLabel + '</div>' +
+    '<div class="toon_tagline"><span class="grayb">No comments</span></div>' +
     '</div>';
   }).join('');
 
