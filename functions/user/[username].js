@@ -112,6 +112,14 @@ async function loadProfile() {
   const totalToons = count || 0;
   document.getElementById('stat_toons').textContent = totalToons;
 
+  // Count total comments
+  const { count: commentCount } = await db
+    .from('comments')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId);
+
+  document.getElementById('stat_comments').textContent = commentCount || 0;
+
   const totalPages = Math.ceil(totalToons / PER_PAGE);
   const offset = (CURRENT_PAGE - 1) * PER_PAGE;
 
@@ -123,7 +131,20 @@ async function loadProfile() {
     .order('created_at', { ascending: false })
     .range(offset, offset + PER_PAGE - 1);
 
-  renderToons(toons || []);
+  // Fetch comment counts for these toons
+  const toonIds = (toons || []).map(t => t.id);
+  let commentCounts = {};
+  if (toonIds.length > 0) {
+    const { data: counts } = await db
+      .from('comments')
+      .select('animation_id')
+      .in('animation_id', toonIds);
+    (counts || []).forEach(c => {
+      commentCounts[c.animation_id] = (commentCounts[c.animation_id] || 0) + 1;
+    });
+  }
+
+  renderToons(toons || [], commentCounts);
   renderPaginator(totalPages, 'paginator_top');
   renderPaginator(totalPages, 'paginator_bottom');
 }
