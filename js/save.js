@@ -12,9 +12,11 @@ function closeSaveDialog() {
   document.getElementById('saveStatus').textContent = '';
 }
 
-document.getElementById('btnSave').addEventListener('click', openSaveDialog);
-document.getElementById('saveCancel').addEventListener('click', closeSaveDialog);
-document.getElementById('saveFinal').addEventListener('click', saveAnimation);
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('btnSave').addEventListener('click', openSaveDialog);
+  document.getElementById('saveCancel').addEventListener('click', closeSaveDialog);
+  document.getElementById('saveFinal').addEventListener('click', saveAnimation);
+});
 
 /* =====================================================
    RENDER FRAME TO CANVAS AT SIZE
