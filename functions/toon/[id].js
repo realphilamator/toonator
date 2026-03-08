@@ -350,11 +350,59 @@ async function postComment() {
   }
 }
 
-function handleLike() {
-  db.auth.getUser().then(({ data: { user } }) => {
-    if (!user) { showAuth('login'); return; }
-    alert('Like feature coming soon!');
-  });
+async function loadLikes() {
+  const { data: toon } = await db
+    .from('animations')
+    .select('likes')
+    .eq('id', TOON_ID)
+    .single();
+
+  if (toon) document.getElementById('like_value').textContent = toon.likes || 0;
+
+  const { data: { user } } = await db.auth.getUser();
+  if (user) {
+    const { data: existing } = await db
+      .from('likes')
+      .select('id')
+      .eq('animation_id', TOON_ID)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (existing) {
+      document.getElementById('like_link').classList.add('active');
+    }
+  }
+}
+
+async function handleLike() {
+  const { data: { user } } = await db.auth.getUser();
+  if (!user) { showAuth('login'); return; }
+
+  const link = document.getElementById('like_link');
+  const valueEl = document.getElementById('like_value');
+  const alreadyLiked = link.classList.contains('active');
+
+  if (alreadyLiked) {
+    const { error } = await db
+      .from('likes')
+      .delete()
+      .eq('animation_id', TOON_ID)
+      .eq('user_id', user.id);
+
+    if (!error) {
+      link.classList.remove('active');
+      valueEl.textContent = Math.max(0, parseInt(valueEl.textContent) - 1);
+    }
+  } else {
+    const { error } = await db
+      .from('likes')
+      .insert({ animation_id: TOON_ID, user_id: user.id });
+
+    if (!error) {
+      link.classList.add('active');
+      valueEl.textContent = parseInt(valueEl.textContent) + 1;
+    }
+  }
 }
 
 function handleFavorite() {
@@ -364,6 +412,7 @@ function handleFavorite() {
   });
 }
 
+loadLikes();
 loadComments();
 </script>
 
