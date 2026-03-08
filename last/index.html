@@ -246,19 +246,18 @@
     if (!comments || comments.length === 0) return;
 
     document.getElementById('last-comments').innerHTML = comments.map((c, i) => `
-    <div class="comment ${i % 2 === 0 ? 'gray' : ''} last_comments">
-        <div class="avatar">
-        <a href="/toon/${c.animation_id}">
-            <img src="${SUPABASE_URL}/storage/v1/object/public/previews/${c.animation_id}_100.gif" width="80"/>
-        </a>
-        </div>
-        <div class="head">
-        <a href="/user/${escapeHTML(c.author_username || 'unknown')}" class="username foreign">
-            ${escapeHTML(c.author_username || 'unknown')}
-        </a>: ${escapeHTML(c.text || '')}
-        </div>
-    </div>`).join('');
-  }
+  <div class="comment ${i % 2 !== 0 ? 'gray' : ''} last_comments">
+    <div class="avatar">
+      <a href="/toon/${c.animation_id}">
+        <img src="${SUPABASE_URL}/storage/v1/object/public/previews/${c.animation_id}_100.gif" width="80"/>
+      </a>
+    </div>
+    <div class="head">
+      <a href="/user/${escapeHTML(c.author_username || 'unknown')}" class="username foreign">
+        ${escapeHTML(c.author_username || 'unknown')}
+      </a>: ${escapeHTML(c.text || '')}
+    </div>
+  </div>`).join('');
 
   loadToons();
   loadGoodPlace();
