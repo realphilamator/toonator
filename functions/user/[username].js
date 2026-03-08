@@ -125,6 +125,8 @@ async function loadProfile() {
 
   // Check logged in user
   const { data: { user: currentUser } } = await db.auth.getUser();
+  console.log('currentUser metadata:', currentUser?.user_metadata);
+  console.log('profile avatar_toon:', profile[0].avatar_toon);
   const isOwnProfile = currentUser &&
     (currentUser.user_metadata?.username === PROFILE_USERNAME);
 

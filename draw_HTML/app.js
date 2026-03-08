@@ -710,6 +710,57 @@ window.enablePalette = function() {
 }
 
 /* =====================================================
+   CONTINUE / LOAD
+===================================================== */
+
+async function loadContinue() {
+  const params = new URLSearchParams(window.location.search);
+  const continueId = params.get('continue');
+  if (!continueId) return;
+
+  // Store the ID so save.js can update instead of insert
+  window.CONTINUE_ID = continueId;
+
+  const { data, error } = await db
+    .from('animations')
+    .select('id, title, frames, description, keywords, draft')
+    .eq('id', continueId)
+    .single();
+
+  if (error || !data) {
+    console.error('Failed to load animation:', error);
+    return;
+  }
+
+  // Populate frames
+  frames = Array.isArray(data.frames)
+    ? data.frames
+    : (data.frames ? Object.values(data.frames) : [{ strokes: [] }]);
+
+  // Rebuild thumbnails
+  frameThumbs = [];
+  frames.forEach((_, i) => updateThumbnail(i));
+
+  currentFrame = 0;
+  previousFrame = -1;
+
+  updateSliderMax();
+  render();
+  drawFramesTimeline();
+
+  // Pre-fill save dialog fields if they exist
+  const nameEl = document.getElementById('saveDialogName');
+  const descEl = document.getElementById('saveDialogDesc');
+  const kwEl = document.getElementById('saveDialogKeywords');
+  const draftEl = document.getElementById('saveDialogDraft');
+
+  if (nameEl) nameEl.value = data.title || '';
+  if (descEl) descEl.value = data.description || '';
+  if (kwEl) kwEl.value = data.keywords || '';
+  if (draftEl) draftEl.checked = data.draft || false;
+}
+
+/* =====================================================
    INIT
 ===================================================== */
 
@@ -719,3 +770,4 @@ updateSizeIndicator();
 updateSliderMax();
 drawFramesTimeline();
 render();
+loadContinue();

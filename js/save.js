@@ -57,18 +57,18 @@ function generateGif(width, height) {
   return new Promise((resolve, reject) => {
     const gif = new GIF({
       workers: 2,
-      quality: 20,        // higher = lower quality but smaller (default is 10)
+      quality: 20,
       width: width,
       height: height,
       workerScript: '/js/gif.worker.js',
-      dither: false,      // disabling dither reduces size
+      dither: false,
       background: '#ffffff',
       transparent: null
     });
 
     frames.forEach(frame => {
       const c = renderFrameToCanvas(frame, width, height);
-      gif.addFrame(c, { delay: 100 }); // 10fps = 100ms per frame
+      gif.addFrame(c, { delay: 100 });
     });
 
     gif.on('finished', blob => resolve(blob));
@@ -98,23 +98,56 @@ async function saveAnimation() {
     const { data: { user }, error: userError } = await db.auth.getUser();
     if (userError || !user) throw new Error('You must be logged in to save.');
 
-    // 2. Insert animation record to get the ID first
-    const { data: anim, error: insertError } = await db
-      .from('animations')
-      .insert({
-        user_id: user.id,
-        title,
-        keywords,
-        description,
-        is_draft: isDraft,
-        frames: frames
-      })
-      .select('id')
-      .single();
+    let animId;
 
-    if (insertError) throw insertError;
+    if (window.CONTINUE_ID) {
+      // ---- UPDATE existing animation ----
 
-    const animId = anim.id;
+      // Verify the toon belongs to this user before updating
+      const { data: existing, error: fetchError } = await db
+        .from('animations')
+        .select('id, user_id')
+        .eq('id', window.CONTINUE_ID)
+        .single();
+
+      if (fetchError || !existing) throw new Error('Could not find original animation.');
+      if (existing.user_id !== user.id) throw new Error('You do not own this animation.');
+
+      const { error: updateError } = await db
+        .from('animations')
+        .update({
+          title,
+          keywords,
+          description,
+          is_draft: isDraft,
+          frames: frames
+        })
+        .eq('id', window.CONTINUE_ID);
+
+      if (updateError) throw updateError;
+
+      animId = window.CONTINUE_ID;
+
+    } else {
+      // ---- INSERT new animation ----
+
+      const { data: anim, error: insertError } = await db
+        .from('animations')
+        .insert({
+          user_id: user.id,
+          title,
+          keywords,
+          description,
+          is_draft: isDraft,
+          frames: frames
+        })
+        .select('id')
+        .single();
+
+      if (insertError) throw insertError;
+
+      animId = anim.id;
+    }
 
     status.textContent = 'Generating previews...';
 
@@ -135,8 +168,8 @@ async function saveAnimation() {
     status.textContent = 'Uploading previews...';
 
     await Promise.all([
-        upload(blob200, `${animId}_100.gif`),
-        upload(blob40,  `${animId}_40.gif`)
+      upload(blob200, `${animId}_100.gif`),
+      upload(blob40,  `${animId}_40.gif`)
     ]);
 
     status.textContent = 'Saved!';
