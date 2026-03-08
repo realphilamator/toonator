@@ -170,7 +170,9 @@ function renderToons(toons) {
       '</div>' +
       '<div class="toon_name"><a class="link" href="/toon/' + toon.id + '">' + title + '</a></div>' +
       '<div class="toon_tagline">' + frameLabel + '</div>' +
-      '<div class="toon_tagline"><span class="grayb">No comments</span></div>' +
+      const cc = commentCounts[toon.id] || 0;
+      const commentLabel = cc === 0 ? '<span class="grayb">No comments</span>' : '<b>' + cc + '</b> comment' + (cc === 1 ? '' : 's');
+      '<div class="toon_tagline">' + commentLabel + '</div>' +
     '</div>';
   }).join('');
 }
