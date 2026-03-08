@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Toonator.com</title>
+  <link rel="shortcut icon" href="/img/favicon-eyes.png"/>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/css/font.css">
+  <link rel="stylesheet" href="/css/images.css">
+  <link rel="stylesheet" href="/css/register.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const { createClient } = supabase;
+    const db = createClient(
+      'https://ytyhhmwnnlkhhpvsurlm.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0eWhobXdubmxraGhwdnN1cmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzcwNTAsImV4cCI6MjA4ODU1MzA1MH0.XZVH3j6xftSRULfhdttdq6JGIUSgHHJt9i-vXnALjH0'
+    );
+  </script>
+  <script src="/js/auth.js"></script>
+  <script>
+    async function loadIncludes() {
+      const header = await fetch('/includes/header.html').then(r => r.text());
+      const footer = await fetch('/includes/footer.html').then(r => r.text());
+      const modal = await fetch('/includes/auth-modal.html').then(r => r.text());
+      document.getElementById('header_placeholder').innerHTML = header;
+      document.getElementById('footer_placeholder').innerHTML = footer;
+      document.body.insertAdjacentHTML('beforeend', modal);
+      updateAuthUI();
+    }
+    loadIncludes();
+  </script>
+</head>
+<body>
+<div id="header_placeholder"></div>
+<div id="content_wrap">
+  <div id="content">
+    <p>Coming soon.</p>
+  </div>
+  <div id="footer_placeholder"></div>
+</div>
+</body>
+</html>

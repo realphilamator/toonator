@@ -1,0 +1,78 @@
+/* --- NEW TOONS --- */
+.m_last {
+    width:130px;
+    height:22px;
+    background:url("/img/images7_t.png") -5px -45px no-repeat;
+}
+
+.topmenu a:hover .m_last {
+    background:url("/img/images2_t.gif") -2px -2px no-repeat;
+}
+
+.selected .m_last {
+    background:url("/img/images7_t.png") -137px -45px no-repeat;
+}
+
+.selected a:hover .m_last {
+    background:url("/img/images2_t.gif") -142px -2px no-repeat;
+}
+
+
+/* --- POPULAR --- */
+.m_popular {
+    width:130px;
+    height:22px;
+    background:url("/img/images7_t.png") -5px -68px no-repeat;
+}
+
+.topmenu a:hover .m_popular {
+    background:url("/img/images2_t.gif") -2px -25px no-repeat;
+}
+
+.selected .m_popular {
+    background:url("/img/images7_t.png") -137px -68px no-repeat;
+}
+
+.selected a:hover .m_popular {
+    background:url("/img/images2_t.gif") -142px -25px no-repeat;
+}
+
+
+/* --- DRAW --- */
+.m_draw {
+    width:100px;
+    height:22px;
+    background:url("/img/images7_t.png") -7px -91px no-repeat;
+}
+
+.topmenu a:hover .m_draw {
+    background:url("/img/images2_t.gif") -4px -48px no-repeat;
+}
+
+.selected .m_draw {
+    background:url("/img/images7_t.png") -139px -91px no-repeat;
+}
+
+.selected a:hover .m_draw {
+    background:url("/img/images2_t.gif") -144px -48px no-repeat;
+}
+
+
+/* --- CONTESTS --- */
+.m_contest {
+    width:130px;
+    height:22px;
+    background:url("/img/images7_t.png") -9px -114px no-repeat;
+}
+
+.topmenu a:hover .m_contest {
+    background:url("/img/images2_t.gif") -7px -71px no-repeat;
+}
+
+.selected .m_contest {
+    background:url("/img/images7_t.png") -137px -114px no-repeat;
+}
+
+.selected a:hover .m_contest {
+    background:url("/img/images2_t.gif") -145px -71px no-repeat;
+}

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Toonator Rebuild</title>
+
+<link rel="stylesheet" href="/draw_HTML/draw.css">
+
+<style>
+canvas {
+  background:white;
+}
+</style>
+
+</head>
+<body>
+
+<div id="editor">
+
+  <canvas id="canvas" width="600" height="300"></canvas>
+
+  <div id="bottomBar">
+  <div id="timeline">
+    <canvas id="timelineCanvas" width="516" height="24"></canvas>
+  </div>
+  <div id="framesSlider">
+    <div id="scrollPrev"></div>
+    <div id="scrollBar">
+      <div id="scrollSlider"></div>
+    </div>
+    <div id="scrollNext"></div>
+    </div>
+    <div id="toolbar">
+      <div id="btnAdd"></div>
+      <div id="btnDelete"></div>
+      <div id="btnPlay"></div>
+      <div id="btnPause"></div>
+      <div id="btnSave"></div>
+      <div id="btnPencil"></div>
+      <div id="btnEraser"></div>
+      
+      <div id="btnEyedropper"></div>
+      
+      <div id="btnSize1"></div>
+      <div id="btnSize2"></div>
+      <div id="btnSize3"></div>
+      <div id="btnSize4"></div>
+      <div id="btnSize5"></div>
+      
+      <div id="btnColorBlack"><div class="colorInner" style="background:#000000;"></div></div>
+      <div id="btnColorRed"><div class="colorInner" style="background:#ff0000;"></div></div>
+      <div id="btnColorCustom"></div>
+      <input type="color" id="colorPicker" value="#ffffff" disabled style="opacity:0; position:absolute; width:24px; height:24px; left:349.3px; top:62px; cursor:pointer; pointer-events:auto;">
+  </div>
+  </div>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>

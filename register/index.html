@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sign up - Toonator</title>
+  <link rel="shortcut icon" href="/img/favicon-eyes.png"/>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/css/font.css">
+  <link rel="stylesheet" href="/css/images.css">
+  <link rel="stylesheet" href="/css/register.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const { createClient } = supabase;
+    const db = createClient(
+      'https://ytyhhmwnnlkhhpvsurlm.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0eWhobXdubmxraGhwdnN1cmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzcwNTAsImV4cCI6MjA4ODU1MzA1MH0.XZVH3j6xftSRULfhdttdq6JGIUSgHHJt9i-vXnALjH0'
+    );
+  </script>
+  <script src="/js/auth.js"></script>
+  <script>
+    async function loadIncludes() {
+      const header = await fetch('/includes/header.html').then(r => r.text());
+      const footer = await fetch('/includes/footer.html').then(r => r.text());
+      const modal = await fetch('/includes/auth-modal.html').then(r => r.text());
+      document.getElementById('header_placeholder').innerHTML = header;
+      document.getElementById('footer_placeholder').innerHTML = footer;
+      document.body.insertAdjacentHTML('beforeend', modal);
+      updateAuthUI();
+    }
+    loadIncludes();
+  </script>
+</head>
+<body>
+<div id="header_placeholder"></div>
+<div id="content_wrap">
+  <div id="content">
+    <div class="sn">
+      <div class="content-sn registration">
+        <h1>Sign up</h1>
+
+        <label>
+          <p>Username:</p>
+          <input class="input" type="text" id="reg_username">
+        </label>
+
+        <label>
+          <p>Password:</p>
+          <input class="input" type="password" id="reg_password1">
+          <span class="error" id="err_password" style="display:none;">no password</span>
+        </label>
+
+        <label>
+          <p>Repeat password:</p>
+          <input class="input" type="password" id="reg_password2">
+          <span class="error" id="err_password_match" style="display:none;">passwords don't match</span>
+        </label>
+
+        <label>
+          <p>E-mail:</p>
+          <input class="input" type="text" id="reg_email">
+          <span class="error" id="err_email" style="display:none;">no email</span>
+        </label>
+
+        <div class="label">
+          <p></p>
+          <button class="complete" id="reg_submit" disabled onclick="registerUser()">Register</button>
+        </div>
+
+        <div class="error" id="err_general" style="display:none; margin-top:10px;"></div>
+      </div>
+    </div>
+    <div style="clear:both"></div>
+  </div>
+  <div id="footer_placeholder"></div>
+</div>
+
+<script>
+const fields = ['reg_username', 'reg_password1', 'reg_password2', 'reg_email'];
+fields.forEach(id => {
+  document.getElementById(id).addEventListener('input', validateForm);
+});
+
+function validateForm() {
+  const username = document.getElementById('reg_username').value.trim();
+  const password1 = document.getElementById('reg_password1').value;
+  const password2 = document.getElementById('reg_password2').value;
+  const email = document.getElementById('reg_email').value.trim();
+
+  document.getElementById('err_password').style.display = password1 ? 'none' : 'inline';
+  document.getElementById('err_email').style.display = email ? 'none' : 'inline';
+  document.getElementById('err_password_match').style.display =
+    (password2 && password1 !== password2) ? 'inline' : 'none';
+
+  const valid = username && password1 && password1 === password2 && email;
+  document.getElementById('reg_submit').disabled = !valid;
+}
+
+async function registerUser() {
+  const username = document.getElementById('reg_username').value.trim();
+  const password = document.getElementById('reg_password1').value;
+  const email = document.getElementById('reg_email').value.trim();
+
+  const { data, error } = await db.auth.signUp({
+    email,
+    password,
+    options: { data: { username } }
+  });
+
+  if (error) {
+    document.getElementById('err_general').style.display = 'block';
+    document.getElementById('err_general').innerText = error.message;
+  } else {
+    window.location.href = '/';
+  }
+}
+</script>
+</body>
+</html>
