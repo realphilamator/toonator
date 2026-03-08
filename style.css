@@ -65,6 +65,10 @@ img {
     position: relative;
 }
 
+#newmenu > li {
+    font: 13pt ToonatorFont;
+}
+
 #header a {
     color: black;
     text-decoration: none;
