@@ -35,7 +35,9 @@ function getProfileHTML(username, page) {
     async function loadIncludes() {
       const header = await fetch('/includes/header.html').then(r => r.text());
       const footer = await fetch('/includes/footer.html').then(r => r.text());
-      const modal = await fetch('/includes/auth-modal.html').then(r => r.text());
+      const donate = await fetch('/includes/donate.html').then(r => r.text());
+      const modal  = await fetch('/includes/auth-modal.html').then(r => r.text());
+      document.getElementById('donate_placeholder').innerHTML = donate;
       document.getElementById('header_placeholder').innerHTML = header;
       document.getElementById('footer_placeholder').innerHTML = footer;
       document.body.insertAdjacentHTML('beforeend', modal);
@@ -91,6 +93,8 @@ function getProfileHTML(username, page) {
 
     <div style="clear:both"></div>
   </div>
+
+  <div id="donate_placeholder"></div>
   <div id="footer_placeholder"></div>
 </div>
 

@@ -122,21 +122,25 @@ export async function onRequestGet(context) {
     const SUPABASE_KEY = '${SUPABASE_ANON_KEY}';
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
+  <script src="/js/auth.js"></script>
+  <script>
+    async function loadIncludes() {
+      const header = await fetch('/includes/header.html').then(r => r.text());
+      const footer = await fetch('/includes/footer.html').then(r => r.text());
+      const donate = await fetch('/includes/donate.html').then(r => r.text());
+      const modal  = await fetch('/includes/auth-modal.html').then(r => r.text());
+      document.getElementById('donate_placeholder').innerHTML = donate;
+      document.getElementById('header_placeholder').innerHTML = header;
+      document.getElementById('footer_placeholder').innerHTML = footer;
+      document.body.insertAdjacentHTML('beforeend', modal);
+      updateAuthUI();
+    }
+    loadIncludes();
+  </script>
 </head>
 <body>
 
-<div id="header_wrap"><div id="header">
-  <a href="/" title="Toonator" class="logo"><img src="/img/toonator40.png"/></a>
-  <ul class="topmenu">
-    <li><a href="/last/" class="imglink"><div class="override m_last"></div></a></li>
-    <li><a href="/popular/day/" class="imglink"><div class="override m_popular"></div></a></li>
-    <li class="red"><a href="/draw/" class="red"><div class="override m_draw"></div></a></li>
-  </ul>
-  <ul id="newmenu">
-    <li><a href="#" onclick="showAuth('join'); return false;">Join</a></li>
-    <li><a href="#" onclick="showAuth('login'); return false;">Sign In</a></li>
-  </ul>
-</div></div>
+<div id="header_placeholder"></div>
 
 <div id="content_wrap">
   <div id="content">
@@ -225,22 +229,10 @@ export async function onRequestGet(context) {
     </div><!-- #toon_page -->
     <div style="clear:both"></div>
   </div>
-</div>
 
-<div id="footer">
-  <a href="/">Toonator.com</a>. <a href="/feedback">Feedback</a>.
+  <div id="donate_placeholder"></div>
+  <div id="footer_placeholder"></div>
 </div>
-
-<!-- Auth modal -->
-<div id="authModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(127,127,127,0.5);z-index:999;align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:10px;padding:20px;width:400px;position:relative;">
-    <a href="#" onclick="closeAuth();return false;" style="position:absolute;right:10px;top:10px;text-decoration:none;color:#ccc;font-size:18pt;">✕</a>
-    <h2 id="authTitle" style="font:24pt ToonatorFont;text-align:center;margin:5px 0 15px 0;border-bottom:1px solid #eee;">Join</h2>
-    <div id="authContent"></div>
-  </div>
-</div>
-
-<script src="/js/auth.js"></script>
 
 <script>
 // ---- Toon Player ----
