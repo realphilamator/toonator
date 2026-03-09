@@ -7,7 +7,7 @@ async function updateAuthUI() {
   if (user) {
     const username = user.user_metadata?.username || user.email;
     menu.innerHTML = `
-      <li><a href="/user/${username}" class="username">${username}</a></li>
+      <li><a href="/user/${username}">${username}</a></li>
       <li><a href="#" onclick="signOut(); return false;">Sign Out</a></li>
     `;
   } else {
