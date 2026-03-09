@@ -1,9 +1,10 @@
 export async function onRequestGet(context) {
   const { username } = context.params;
+  const decodedUsername = decodeURIComponent(username); // ← add this
   const url = new URL(context.request.url);
   const page = parseInt(url.searchParams.get('page') || '1');
 
-  const html = getProfileHTML(username, page);
+  const html = getProfileHTML(decodedUsername, page); // ← use decoded
   return new Response(html, {
     headers: { 'Content-Type': 'text/html;charset=UTF-8' }
   });
