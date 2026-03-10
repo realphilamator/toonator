@@ -173,6 +173,15 @@ function generateGif(width, height) {
 ===================================================== */
 
 async function saveAnimation() {
+  console.log('saveAnimation called');
+  // ...
+  
+  // After GIF generation:
+  console.log('GIFs generated', blob200, blob40);
+  
+  // After upload:
+  console.log('upload done');
+  
   const title       = (document.getElementById('saveDialogName').value.trim() || 'Untitled').slice(0, 100);
   const keywords    = document.getElementById('saveDialogKeywords').value.trim().slice(0, 200);
   const description = document.getElementById('saveDialogDesc').value.trim().slice(0, 1000);
