@@ -236,12 +236,11 @@ ul.topmenu li a {
     display: block;
 }
 #loginform {
-    position: relative;
+    position: fixed;
     width: 200px;
     float:right;
 }
 #login_inline_form {
-    xdisplay:none;
     position:absolute;
     right: 0;
     z-index:100;
@@ -1703,15 +1702,13 @@ a.nmenu.selected {
 
 #notify_wrap {
     width: 1000px;
-    margin: 0 auto;
-    background: #FFFFED;
-    border-bottom: 1px solid #cccccc;
-    border-left: 1px solid #cccccc;
-    border-right: 1px solid #cccccc;
-    border-bottom-right-radius: 7px;
-    border-bottom-left-radius: 7px;
-    position: relative;  /* ADD THIS */
-    z-index: 50;         /* ADD THIS — keeps it below nav dropdowns */
+    margin:0 auto;
+    background:#FFFFED;
+    border-bottom:1px solid #cccccc;
+    border-left:1px solid #cccccc;
+    border-right:1px solid #cccccc;
+    border-bottom-right-radius:7px;
+    border-bottom-left-radius:7px;
 }
 #notify_inner {
     padding:4px;
