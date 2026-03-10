@@ -37,8 +37,8 @@ async function updateAuthUI() {
 
   } else {
     menu.innerHTML = `
-      <li><a href="#" onclick="showAuth('join'); return false;">Join</a></li>
-      <li><a href="#" onclick="showAuth('login'); return false;">Sign In</a></li>
+      <li><a href="#" onclick="showAuth('join'); return false;">Регистрация</a></li>
+      <li><a href="#" onclick="showAuth('login'); return false;">Войти</a></li>
     `;
   }
 }

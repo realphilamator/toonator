@@ -19,7 +19,7 @@
   <meta name="title" content="Мультатор">
   <meta name="description" content="Мультатор - это онлайн-редактор мультиков.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://toonator.pages.dev">
+  <meta property="og:url" content="https://multator.site">
   <meta property="og:title" content="Мультатор">
   <meta property="og:description" content="Мультатор - это онлайн-редактор мультиков.">
   <meta property="og:image" content="/img/multator.png">
@@ -118,7 +118,7 @@
     return `${SUPABASE_URL}/storage/v1/object/public/previews/${id}_${size}.gif`;
   }
 
-  function toonCardHTML(toon, username) {
+  function toonCardHTML(toon, username, russian) {
     const frames = Array.isArray(toon.frames)
       ? toon.frames
       : (toon.frames ? Object.values(toon.frames) : []);
@@ -126,6 +126,7 @@
     const frameStr = frameCount >= 50 ? `<b>${frameCount}</b> кадров` : `${frameCount} кадров`;
     const commentStr = `<span class="grayb">Нет комментариев</span>`;
     const title = escapeHTML(toon.title || 'Без названия');
+    const usernameStyle = russian ? ' style="color:#030;"' : '';
 
     return `
       <div class="toon_preview owned">
@@ -138,7 +139,7 @@
           <a class="link" href="/toon/${toon.id}">${title}</a>
         </div>
         <div class="toon_tagline">
-          <a href="/user/${escapeHTML(username)}" class="username foreign">${escapeHTML(username)}</a>,
+          <a href="/user/${escapeHTML(username)}" class="username foreign"${usernameStyle}>${escapeHTML(username)}</a>,
           ${frameStr}
         </div>
         <div class="toon_tagline">${commentStr}</div>
@@ -150,7 +151,10 @@
     await Promise.all(toons.map(async (toon) => {
       if (toon.user_id && !userMap[toon.user_id]) {
         const userData = await rpc('get_user_by_id', { p_user_id: toon.user_id });
-        userMap[toon.user_id] = userData?.[0]?.username || 'unknown';
+        userMap[toon.user_id] = {
+          username: userData?.[0]?.username || 'unknown',
+          russian: userData?.[0]?.russian || false
+        };
       }
     }));
     return userMap;
@@ -166,7 +170,10 @@
       return;
     }
     const userMap = await resolveUsernames(toons);
-    list.innerHTML = toons.map(t => toonCardHTML(t, userMap[t.user_id] || 'unknown')).join('');
+    list.innerHTML = toons.map(t => {
+      const user = userMap[t.user_id] || { username: 'unknown', russian: false };
+      return toonCardHTML(t, user.username, user.russian);
+    }).join('');
   }
 
   async function loadNewest() {
@@ -179,13 +186,15 @@
       return;
     }
     const userMap = await resolveUsernames(toons);
-    list.innerHTML = toons.map(t => toonCardHTML(t, userMap[t.user_id] || 'unknown')).join('');
+    list.innerHTML = toons.map(t => {
+      const user = userMap[t.user_id] || { username: 'unknown', russian: false };
+      return toonCardHTML(t, user.username, user.russian);
+    }).join('');
   }
 
   async function loadGoodPlace() {
     // TODO: implement Good Place feature
   }
-
 
   // kick everything off
   loadIncludes();
