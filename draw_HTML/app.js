@@ -1104,6 +1104,17 @@ setActiveTool("btnPencil");
 setActiveColor('btnColorBlack');
 updateSizeIndicator();
 updateSliderMax();
+
+// Auto-size to the editor's actual rendered width on load,
+// then again whenever the window resizes (e.g. parent iframe changes)
+function autoResize() {
+  const w = document.getElementById('editor').offsetWidth;
+  if (w > 0) window.resizeEditor(w);
+}
+window.addEventListener('resize', autoResize);
+// Use setTimeout to let the parent page finish sizing the iframe first
+setTimeout(autoResize, 0);
+
 drawFramesTimeline();
 render();
 loadContinue();
