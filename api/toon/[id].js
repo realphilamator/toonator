@@ -42,14 +42,10 @@ function formatDate(iso) {
 export default async function handler(req, res) {
   const { id } = req.query;
 
-  if (!id) {
-    return res.status(404).send('Not found');
-  }
+  if (!id) return res.status(404).send('Not found');
 
   const toons = await supabase(`/animations?id=eq.${id}&select=*`);
-  if (!toons || toons.length === 0) {
-    return res.status(404).send('Toon not found');
-  }
+  if (!toons || toons.length === 0) return res.status(404).send('Toon not found');
 
   const toon = toons[0];
 
@@ -69,7 +65,7 @@ export default async function handler(req, res) {
     }
   }
 
-  const authorUsernameStyle = authorRussian ? ' style="color:#030;"' : '';
+  const authorRussianClass = authorRussian ? ' russian' : '';
 
   let continuedFromHtml = '';
   if (toon.continued_from) {
@@ -85,12 +81,12 @@ export default async function handler(req, res) {
           origAuthorRussian = origUser[0].russian || false;
         }
       }
-      const origAuthorStyle = origAuthorRussian ? ' style="color:#030;"' : '';
+      const origAuthorRussianClass = origAuthorRussian ? ' russian' : '';
       const origTitle = orig.title || 'Untitled';
       continuedFromHtml = `<div style="font-size:9pt; margin-top:5px;">
         Original: <a href="/toon/${orig.id}" class="noh" title="${origTitle} (${origAuthor})">
           &#x25ce; ${origTitle}
-        </a> by <a href="/user/${origAuthor}" class="username foreign"${origAuthorStyle}>${origAuthor}</a>
+        </a> by <a href="/user/${origAuthor}" class="username foreign${origAuthorRussianClass}">${origAuthor}</a>
       </div>`;
     }
   }
@@ -118,6 +114,7 @@ export default async function handler(req, res) {
   <link href="/css/font.css" type="text/css" rel="stylesheet"/>
   <link href="/css/images_ru.css" type="text/css" rel="stylesheet"/>
   <link href="/style.css" type="text/css" rel="stylesheet"/>
+  <style>.username.russian { color: #030 !important; }</style>
   <meta property="og:title" content="${title} - Toonator. Draw animation yourself!"/>
   <meta property="og:description" content="${description || title}"/>
   <meta property="og:image" content="${previewUrl}"/>
@@ -146,30 +143,23 @@ export default async function handler(req, res) {
   </script>
 </head>
 <body>
-
 <div id="header_placeholder"></div>
-
 <div id="content_wrap">
   <div id="content">
     <div id="toon_page">
-
       <div class="toon_panel">
         <h2><span id="toon_title">${title}</span></h2>
-
         <div class="player" id="player_container"></div>
-
         <div class="info">
           <div class="author">
             <img class="avatar" id="author_avatar" src="${authorAvatar}" onerror="this.src='/img/avatar100.gif'"/>
             <div class="author_name">
-              <a href="/user/${authorUsername}" class="username foreign"${authorUsernameStyle}>${authorUsername}</a>
+              <a href="/user/${authorUsername}" class="username foreign${authorRussianClass}">${authorUsername}</a>
             </div>
             <div class="date">${createdAt}</div>
             ${continuedFromHtml}
           </div>
-
           <div class="prizes"></div>
-
           <div class="buttons">
             <div class="toonmedals"></div>
             <div class="like hover">
@@ -188,15 +178,11 @@ export default async function handler(req, res) {
               </a>
             </div>
           </div>
-
           <div class="line_5"><img src="/img/1.gif"/></div>
-
           <div class="description" id="description_text_div">
             <span id="description_text">${description}</span>
           </div>
-
           ${tagsHtml ? `<div class="tags" style="margin:5px 0;">${tagsHtml}</div>` : ''}
-
           <div class="share">
             <ul class="share">
               <li>Share:</li>
@@ -204,10 +190,8 @@ export default async function handler(req, res) {
               <li><a rel="nofollow" title="Reddit" href="https://reddit.com/submit?url=https://toonator.site/toon/${id}&title=${encodeURIComponent(title)}" target="_blank"><div class="shr_reddit"></div></a></li>
             </ul>
           </div>
-
           <div class="tcontinues"></div>
         </div>
-
         <div class="left_panel">
           <div class="toon_comments" id="comments">
             <span class="header">
@@ -229,12 +213,10 @@ export default async function handler(req, res) {
             </div>
           </div>
         </div>
-
       </div>
     </div>
     <div style="clear:both"></div>
   </div>
-
   <div id="donate_placeholder"></div>
   <div id="footer_placeholder"></div>
 </div>
@@ -255,13 +237,7 @@ function showCommentForm() {
 }
 
 async function loadComments() {
-  const { data, error } = await db
-    .from('comments')
-    .select('*')
-    .eq('animation_id', TOON_ID)
-    .order('created_at', { ascending: false })
-    .limit(20);
-
+  const { data, error } = await db.from('comments').select('*').eq('animation_id', TOON_ID).order('created_at', { ascending: false }).limit(20);
   const list = document.getElementById('comments_list');
   if (!data || data.length === 0) {
     list.innerHTML = '<p style="color:#888888;font-size:10pt;padding:10px;">No comments yet.</p>';
@@ -270,25 +246,18 @@ async function loadComments() {
 
   const usernames = [...new Set(data.map(c => c.author_username).filter(Boolean))];
   const userDataMap = {};
-
   await Promise.all(usernames.map(async (uname) => {
     try {
       const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/get_user_by_username', {
         method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_KEY,
-          'Content-Type': 'application/json'
-        },
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({ p_username: uname })
       });
       const userData = await res.json();
       if (userData && userData.length > 0) {
         const avatarToonId = userData[0].avatar_toon_id || userData[0].avatar_toon || null;
         userDataMap[uname] = {
-          avatar: avatarToonId
-            ? SUPABASE_URL + '/storage/v1/object/public/previews/' + avatarToonId + '_100.gif'
-            : '/img/avatar100.gif',
+          avatar: avatarToonId ? SUPABASE_URL + '/storage/v1/object/public/previews/' + avatarToonId + '_100.gif' : '/img/avatar100.gif',
           russian: userData[0].russian || false
         };
       } else {
@@ -302,7 +271,7 @@ async function loadComments() {
   list.innerHTML = data.map(c => {
     const username = c.author_username || 'anonymous';
     const ud = userDataMap[username] || { avatar: '/img/avatar100.gif', russian: false };
-    const usernameStyle = ud.russian ? ' style="color:#030;"' : '';
+    const russianClass = ud.russian ? ' russian' : '';
     const date = new Date(c.created_at);
     const dateStr = date.toLocaleDateString('en-US') + ' ' + date.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
     return \`<div class="comment">
@@ -310,7 +279,7 @@ async function loadComments() {
         <a href="/user/\${username}"><img class="avatar" src="\${ud.avatar}" onerror="this.src='/img/avatar100.gif'"/></a>
       </div>
       <div class="head">
-        <a href="/user/\${username}" class="username foreign"\${usernameStyle}>\${username}</a>
+        <a href="/user/\${username}" class="username foreign\${russianClass}">\${username}</a>
         <span class="date"><b>\${dateStr}</b></span>
       </div>
       <div class="text">\${c.text}</div>
@@ -324,12 +293,7 @@ async function postComment() {
   const { data: { user } } = await db.auth.getUser();
   if (!user) { showAuth('login'); return; }
   const username = user.user_metadata?.username || user.email;
-  const { error } = await db.from('comments').insert({
-    animation_id: TOON_ID,
-    user_id: user.id,
-    author_username: username,
-    text: text
-  });
+  const { error } = await db.from('comments').insert({ animation_id: TOON_ID, user_id: user.id, author_username: username, text: text });
   if (!error) {
     document.getElementById('comment_text').value = '';
     document.getElementById('comments_form').style.display = 'none';

@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/css/font.css">
   <link rel="stylesheet" href="/css/images_ru.css">
+  <style>.username.russian { color: #030 !important; }</style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const { createClient } = supabase;
@@ -34,53 +35,40 @@
 <body>
 <div id="donate_placeholder"></div>
 <div id="header_placeholder"></div>
-
 <div id="content_wrap">
   <div id="content">
-
     <div class="content_left">
       <h1>
         <a href="/last/" class="nmenu selected">Классика</a> |
         <a href="/last/color/" class="nmenu">Цветные</a> |
         <a href="/last/sandbox/" class="nmenu">Песочница</a>
       </h1>
-
       <div class="paginator" id="paginator-top"></div>
-
       <div class="toons_container">
         <div class="toons_list" id="toons-list">
           <div style="text-align:center;color:#888;padding:20px;">Загрузка...</div>
         </div>
       </div>
-
       <div class="paginator" id="paginator-bottom"></div>
     </div>
-
     <div class="content_right">
       <h1><a href="/goodplace/">Козырное место</a></h1>
       <div id="good-place-toon"></div>
-
       <h1>Последние комментарии</h1>
       <div id="last-comments"></div>
     </div>
-
     <div class="clear"></div>
   </div>
   <div id="footer_placeholder"></div>
 </div>
-
 <script>
   const SUPABASE_URL = 'https://ytyhhmwnnlkhhpvsurlm.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0eWhobXdubmxraGhwdnN1cmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzcwNTAsImV4cCI6MjA4ODU1MzA1MH0.XZVH3j6xftSRULfhdttdq6JGIUSgHHJt9i-vXnALjH0';
-
   const TOONS_PER_PAGE = 12;
 
   async function apiFetch(path) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1${path}`, {
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-      }
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
     });
     if (!res.ok) return null;
     return res.json();
@@ -89,11 +77,7 @@
   async function rpc(fn, params) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
       method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'Content-Type': 'application/json'
-      },
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(params)
     });
     if (!res.ok) return null;
@@ -105,10 +89,7 @@
   }
 
   function escapeHTML(str) {
-    return String(str || '')
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
   }
 
   function previewUrl(id, size = 100) {
@@ -118,18 +99,14 @@
   function toonCardHTML(toon, username, russian) {
     const frames = Array.isArray(toon.frames) ? toon.frames : (toon.frames ? Object.values(toon.frames) : []);
     const frameCount = frames.length;
-    const boldFrames = frameCount >= 50;
-    const frameStr = boldFrames ? `<b>${frameCount}</b> кадров` : `${frameCount} кадров`;
-
+    const frameStr = frameCount >= 50 ? `<b>${frameCount}</b> кадров` : `${frameCount} кадров`;
     const commentCount = toon.comment_count || 0;
     const commentStr = commentCount > 0
       ? `${commentCount} коммент${commentCount === 1 ? 'арий' : commentCount < 5 ? 'ария' : 'ариев'}`
       : `<span class="grayb">Нет комментариев</span>`;
-
     const medal = toon.featured ? `<img class="toonmedal" src="/img/medal.gif"/>` : '';
     const title = escapeHTML(toon.title || 'Без названия');
-    const usernameStyle = russian ? ' style="color:#030;"' : '';
-
+    const russianClass = russian ? ' russian' : '';
     return `
       <div class="toon_preview owned">
         ${medal}
@@ -138,11 +115,9 @@
             <img alt="${title}" title="${title}" src="${previewUrl(toon.id)}">
           </a>
         </div>
-        <div class="toon_name">
-          <a class="link" href="/toon/${toon.id}">${title}</a>
-        </div>
+        <div class="toon_name"><a class="link" href="/toon/${toon.id}">${title}</a></div>
         <div class="toon_tagline">
-          <a href="/user/${escapeHTML(username)}" class="username foreign"${usernameStyle}>${escapeHTML(username)}</a>,
+          <a href="/user/${escapeHTML(username)}" class="username foreign${russianClass}">${escapeHTML(username)}</a>,
           ${frameStr}
         </div>
         <div class="toon_tagline">${commentStr}</div>
@@ -154,8 +129,7 @@
     let html = '<ul class="paginator">';
     const visible = Math.min(5, totalPages);
     for (let i = 1; i <= visible; i++) {
-      html += `<li class="${i === currentPage ? 'current' : ''}">
-        <a href="/last/?page=${i}">${i}</a></li>`;
+      html += `<li class="${i === currentPage ? 'current' : ''}"><a href="/last/?page=${i}">${i}</a></li>`;
     }
     if (totalPages > visible) html += `<li class="dots">...</li>`;
     html += '</ul>';
@@ -165,49 +139,25 @@
   async function loadToons() {
     const page = getPage();
     const from = (page - 1) * TOONS_PER_PAGE;
-
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/animations?select=*&order=created_at.desc&offset=${from}&limit=${TOONS_PER_PAGE}`,
-      {
-        headers: {
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'Prefer': 'count=exact'
-        }
-      }
+      { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Prefer': 'count=exact' } }
     );
-
     const toonsList = document.getElementById('toons-list');
-
-    if (!res.ok) {
-      toonsList.innerHTML = '<div style="text-align:center;color:#888;padding:20px;">Не удалось загрузить мульты.</div>';
-      return;
-    }
-
+    if (!res.ok) { toonsList.innerHTML = '<div style="text-align:center;color:#888;padding:20px;">Не удалось загрузить мульты.</div>'; return; }
     const toons = await res.json();
     const totalCount = parseInt(res.headers.get('Content-Range')?.split('/')[1] || '0', 10);
-
-    if (!toons || toons.length === 0) {
-      toonsList.innerHTML = '<div style="text-align:center;color:#888;padding:20px;">Мультов пока нет.</div>';
-      return;
-    }
+    if (!toons || toons.length === 0) { toonsList.innerHTML = '<div style="text-align:center;color:#888;padding:20px;">Мультов пока нет.</div>'; return; }
 
     const userMap = {};
     await Promise.all(toons.map(async (toon) => {
       if (toon.user_id && !userMap[toon.user_id]) {
         const userData = await rpc('get_user_by_id', { p_user_id: toon.user_id });
-        userMap[toon.user_id] = {
-          username: userData?.[0]?.username || 'unknown',
-          russian: userData?.[0]?.russian || false
-        };
+        userMap[toon.user_id] = { username: userData?.[0]?.username || 'unknown', russian: userData?.[0]?.russian || false };
       }
     }));
 
-    toonsList.innerHTML = toons.map(t => {
-      const user = userMap[t.user_id] || { username: 'unknown', russian: false };
-      return toonCardHTML(t, user.username, user.russian);
-    }).join('');
-
+    toonsList.innerHTML = toons.map(t => { const u = userMap[t.user_id] || { username: 'unknown', russian: false }; return toonCardHTML(t, u.username, u.russian); }).join('');
     const totalPages = Math.ceil(totalCount / TOONS_PER_PAGE);
     const pager = paginatorHTML(page, totalPages);
     document.getElementById('paginator-top').innerHTML = pager;
@@ -217,33 +167,22 @@
   async function loadGoodPlace() {
     const toons = await apiFetch('/animations?featured=eq.true&order=created_at.desc&limit=1');
     if (!toons || toons.length === 0) return;
-
     const toon = toons[0];
     const userData = toon.user_id ? await rpc('get_user_by_id', { p_user_id: toon.user_id }) : null;
     const username = userData?.[0]?.username || 'unknown';
     const russian = userData?.[0]?.russian || false;
-
     const frames = Array.isArray(toon.frames) ? toon.frames : (toon.frames ? Object.values(toon.frames) : []);
     const commentCount = toon.comment_count || 0;
-    const commentStr = commentCount > 0
-      ? `${commentCount} комментариев`
-      : `<span class="grayb">Нет комментариев</span>`;
+    const commentStr = commentCount > 0 ? `${commentCount} комментариев` : `<span class="grayb">Нет комментариев</span>`;
     const title = escapeHTML(toon.title || 'Без названия');
-    const usernameStyle = russian ? ' style="color:#030;"' : '';
-
+    const russianClass = russian ? ' russian' : '';
     document.getElementById('good-place-toon').innerHTML = `
       <div class="toon_preview large owned">
         <img class="toonmedal" src="/img/medal.gif"/>
-        <div class="toon_image">
-          <a href="/toon/${toon.id}" title="${title}">
-            <img alt="${title}" src="${previewUrl(toon.id)}">
-          </a>
-        </div>
-        <div class="toon_name">
-          <a class="link" href="/toon/${toon.id}">${title}</a>
-        </div>
+        <div class="toon_image"><a href="/toon/${toon.id}" title="${title}"><img alt="${title}" src="${previewUrl(toon.id)}"></a></div>
+        <div class="toon_name"><a class="link" href="/toon/${toon.id}">${title}</a></div>
         <div class="toon_tagline">
-          <a href="/user/${escapeHTML(username)}" class="username foreign"${usernameStyle}>${escapeHTML(username)}</a>,
+          <a href="/user/${escapeHTML(username)}" class="username foreign${russianClass}">${escapeHTML(username)}</a>,
           ${frames.length} кадров
         </div>
         <div class="toon_tagline">${commentStr}</div>
@@ -254,28 +193,23 @@
     const comments = await apiFetch('/comments?order=created_at.desc&limit=10');
     if (!comments || comments.length === 0) return;
 
-    // Fetch russian flag for each commenter
-    const usernameRussianMap = {};
+    const usernameDataMap = {};
     await Promise.all(comments.map(async (c) => {
       const uname = c.author_username;
-      if (uname && !usernameRussianMap[uname]) {
+      if (uname && !usernameDataMap[uname]) {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_user_by_username`, {
           method: 'POST',
-          headers: {
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json'
-          },
+          headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ p_username: uname })
         });
         const userData = await res.json();
-        usernameRussianMap[uname] = userData?.[0]?.russian || false;
+        usernameDataMap[uname] = userData?.[0]?.russian || false;
       }
     }));
 
     document.getElementById('last-comments').innerHTML = comments.map((c, i) => {
       const uname = c.author_username || 'unknown';
-      const usernameStyle = usernameRussianMap[uname] ? ' style="color:#030;"' : '';
+      const russianClass = usernameDataMap[uname] ? ' russian' : '';
       return `
   <div class="comment ${i % 2 !== 0 ? 'gray' : ''} last_comments">
     <div class="avatar">
@@ -284,9 +218,7 @@
       </a>
     </div>
     <div class="head">
-      <a href="/user/${escapeHTML(uname)}" class="username foreign"${usernameStyle}>
-        ${escapeHTML(uname)}
-      </a>: ${escapeHTML(c.text || '')}
+      <a href="/user/${escapeHTML(uname)}" class="username foreign${russianClass}">${escapeHTML(uname)}</a>: ${escapeHTML(c.text || '')}
     </div>
   </div>`;
     }).join('');
@@ -296,6 +228,5 @@
   loadGoodPlace();
   loadLastComments();
 </script>
-
 </body>
 </html>

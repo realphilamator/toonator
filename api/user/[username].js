@@ -18,6 +18,7 @@ function getProfileHTML(username, page) {
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/css/font.css">
   <link rel="stylesheet" href="/css/images_ru.css">
+  <style>.username.russian { color: #030 !important; }</style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const { createClient } = supabase;
@@ -49,9 +50,7 @@ function getProfileHTML(username, page) {
 <div id="header_placeholder"></div>
 <div id="content_wrap">
   <div id="content">
-
     <div class="userprofile">
-
       <div class="content_right">
         <div class="center">
           <h3 id="profile_username_wrap">
@@ -69,30 +68,23 @@ function getProfileHTML(username, page) {
         <br/>
         <a id="private_messages_link" href="#" style="display:none; font-size:10pt;">Private messages</a>
       </div>
-
       <div class="content_left">
         <h1><span style="font-weight:normal">
           <a class="nmenu selected" href="/user/${username}/">Album</a> |
           <a class="nmenu" href="/user/${username}/favorites/">Favorites</a> |
           <a class="nmenu" href="/user/${username}/comments/">Comments</a>
         </span></h1>
-
         <div id="paginator_top"></div>
-
         <div class="toons_container">
           <div class="toons_list" id="toons_list">
             <p style="color:#888888; font-size:10pt; padding:10px 0;">Loading...</p>
           </div>
         </div>
-
         <div id="paginator_bottom"></div>
       </div>
-
     </div>
-
     <div style="clear:both"></div>
   </div>
-
   <div id="donate_placeholder"></div>
   <div id="footer_placeholder"></div>
 </div>
@@ -110,15 +102,12 @@ async function loadProfile() {
   const userId = profile[0].id;
   const isRussian = profile[0].russian || false;
 
-  // Apply green color to profile username if russian
   if (isRussian) {
-    const usernameEl = document.getElementById('profile_username');
-    if (usernameEl) usernameEl.style.color = '#030';
+    document.getElementById('profile_username').classList.add('russian');
   }
 
   const { count } = await db.from('animations').select('*', { count: 'exact', head: true }).eq('user_id', userId);
-  const totalToons = count || 0;
-  document.getElementById('stat_toons').textContent = totalToons;
+  document.getElementById('stat_toons').textContent = count || 0;
 
   const { count: commentCount } = await db.from('comments').select('*', { count: 'exact', head: true }).eq('user_id', userId);
   document.getElementById('stat_comments').textContent = commentCount || 0;
@@ -149,7 +138,7 @@ async function loadProfile() {
     pmLink.style.display = '';
   }
 
-  const totalPages = Math.ceil(totalToons / PER_PAGE);
+  const totalPages = Math.ceil((count || 0) / PER_PAGE);
   const offset = (CURRENT_PAGE - 1) * PER_PAGE;
 
   const { data: toons } = await db.from('animations').select('id, title, frames, created_at').eq('user_id', userId).order('created_at', { ascending: false }).range(offset, offset + PER_PAGE - 1);
@@ -197,11 +186,9 @@ function renderPaginator(totalPages, containerId) {
   const shown = Math.min(totalPages, maxShow);
   let items = '';
   for (let i = 1; i <= shown; i++) {
-    if (i === CURRENT_PAGE) {
-      items += '<li class="current"><a href="/user/' + PROFILE_USERNAME + '/' + i + '/">' + i + '</a></li>';
-    } else {
-      items += '<li><a href="/user/' + PROFILE_USERNAME + '/' + i + '/">' + i + '</a></li>';
-    }
+    items += i === CURRENT_PAGE
+      ? '<li class="current"><a href="/user/' + PROFILE_USERNAME + '/' + i + '/">' + i + '</a></li>'
+      : '<li><a href="/user/' + PROFILE_USERNAME + '/' + i + '/">' + i + '</a></li>';
   }
   if (totalPages > maxShow) items += '<li class="dots">...</li>';
   container.innerHTML = '<div class="paginator"><ul class="paginator">' + items + '</ul><div style="clear:both"></div></div>';
