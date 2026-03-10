@@ -103,24 +103,12 @@ async function registerUser() {
   const { data, error } = await db.auth.signUp({
     email,
     password,
-    options: { data: { username } }
+    options: { data: { username, russian: true } }
   });
 
   if (error) {
     document.getElementById('err_general').style.display = 'block';
     document.getElementById('err_general').innerText = error.message;
-    return;
-  }
-
-  const { error: insertError } = await db.from('profiles').insert({
-    id: data.user.id,
-    username: username,
-    russian: true
-  });
-
-  if (insertError) {
-    document.getElementById('err_general').style.display = 'block';
-    document.getElementById('err_general').innerText = insertError.message;
     return;
   }
 
