@@ -59,6 +59,19 @@ const lastThreeKeys = [0, 0, 0];
 const brushSizes = [2, 4, 6, 10, 20];
 const sizeButtons = ['btnSize1','btnSize2','btnSize3','btnSize4','btnSize5'];
 
+/* =====================================================
+   SETTINGS — all user-configurable values
+===================================================== */
+const settings = {
+  smoothing: true,          // enable/disable multicurve spline smoothing
+  simplifyTolerance: 5,     // RDP simplification tolerance (0 = off, higher = fewer points)
+  onionSkin: true,          // show previous frames ghosted
+  onionSkin2: true,         // show 2nd previous frame (very faint)
+  onionAlpha1: 0.3,         // opacity of frame-1 ghost
+  onionAlpha2: 0.1,         // opacity of frame-2 ghost
+  playFPS: 10,              // playback frames per second
+};
+
 /* timeline */
 
 let startPos = 0;
@@ -75,14 +88,13 @@ let renderScale = 1;
 function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // NEW: show two previous frames for onion skinning (like the ActionScript backSprite2 / backSprite)
-  if (currentFrame > 1) {
-    ctx.globalAlpha = 0.1;
+  if (settings.onionSkin && currentFrame > 1 && settings.onionSkin2) {
+    ctx.globalAlpha = settings.onionAlpha2;
     drawFrameStrokes(ctx, frames[currentFrame - 2].strokes);
   }
 
-  if (currentFrame > 0) {
-    ctx.globalAlpha = 0.3;
+  if (settings.onionSkin && currentFrame > 0) {
+    ctx.globalAlpha = settings.onionAlpha1;
     drawFrameStrokes(ctx, frames[currentFrame - 1].strokes);
   }
 
@@ -101,10 +113,18 @@ function drawFrameStrokes(targetCtx, strokes) {
     targetCtx.lineJoin = "round";
 
     if (stroke.oldschool) {
-      // Oldschool filled-outline strokes are stored as a polygon path
       drawOldschoolStroke(targetCtx, stroke);
     } else {
-      drawMulticurve(targetCtx, stroke.points, false);
+      if (settings.smoothing) {
+        drawMulticurve(targetCtx, stroke.points, false);
+      } else {
+        // raw polyline when smoothing is off
+        stroke.points.forEach((p, i) => {
+          const x = p.x * renderScale, y = p.y * renderScale;
+          if (i === 0) targetCtx.moveTo(x, y);
+          else targetCtx.lineTo(x, y);
+        });
+      }
       targetCtx.stroke();
     }
   });
@@ -392,9 +412,9 @@ canvas.addEventListener("mouseup", () => {
   drawing = false;
   ctx.beginPath();
 
-  // NEW: simplify points on mouse-up (mirrors AS3 simplifyLang call)
-  if (currentStroke && currentStroke.points.length > 2) {
-    currentStroke.points = simplifyPoints(currentStroke.points, 5);
+  // simplify points on mouse-up — tolerance 0 means skip entirely
+  if (currentStroke && currentStroke.points.length > 2 && settings.simplifyTolerance > 0) {
+    currentStroke.points = simplifyPoints(currentStroke.points, settings.simplifyTolerance);
   }
 
   // NEW: build oldschool polygon outline after simplification
@@ -501,7 +521,7 @@ function play(){
     render();
     drawFramesTimeline();
 
-  },100);
+  }, Math.round(1000 / settings.playFPS));
 
 }
 
@@ -838,8 +858,12 @@ document.getElementById("btnEyedropper").addEventListener("click", () => {
 // NEW: Oldschool brush mode toggled by typing "old" — no button needed
 function switchOldschool() {
   oldschoolMode = !oldschoolMode;
+  settings.oldschoolMode = oldschoolMode;
   eyedropperActive = false;
   canvas.style.cursor = "default";
+  // sync checkbox if panel is open
+  const cb = document.getElementById('settingOldschool');
+  if (cb) cb.checked = oldschoolMode;
 }
 
 canvas.addEventListener("click", (e) => {
@@ -877,15 +901,23 @@ sizeButtons.forEach((id, i) => {
    KEYBOARD
 ===================================================== */
 
+// Set to true whenever the user is typing in a text field (save dialog, settings)
+// so drawing hotkeys don't fire
+let keybindsDisabled = false;
+
 document.addEventListener("keydown",(e)=>{
 
-  // NEW: track last 3 char codes to detect the "old" sequence (mirrors AS3 lastThreeKeys)
+  // Always track the "old" sequence regardless of keybinds state
   lastThreeKeys[0] = lastThreeKeys[1];
   lastThreeKeys[1] = lastThreeKeys[2];
   lastThreeKeys[2] = e.key.charCodeAt(0);
   if (lastThreeKeys[0] === 111 && lastThreeKeys[1] === 108 && lastThreeKeys[2] === 100) {
     switchOldschool();
   }
+
+  // Block all drawing hotkeys when typing in dialogs or settings inputs
+  if (keybindsDisabled) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
   switch(e.key.toLowerCase()){
 
@@ -1075,3 +1107,293 @@ updateSliderMax();
 drawFramesTimeline();
 render();
 loadContinue();
+
+
+
+/* =====================================================
+   SETTINGS PANEL
+===================================================== */
+
+(function () {
+
+  // ── disable keybinds when any text input is focused ──
+  document.addEventListener('focusin', (e) => {
+    if (e.target.tagName === 'INPUT' && e.target.type !== 'range' && e.target.type !== 'checkbox'
+        || e.target.tagName === 'TEXTAREA') {
+      keybindsDisabled = true;
+    }
+  });
+  document.addEventListener('focusout', (e) => {
+    if (e.target.tagName === 'INPUT' && e.target.type !== 'range' && e.target.type !== 'checkbox'
+        || e.target.tagName === 'TEXTAREA') {
+      keybindsDisabled = false;
+    }
+  });
+
+  // ── inject ⚙ button into toolbar (matches existing btn style) ──
+  const toolbar = document.getElementById('toolbar');
+  const btn = document.createElement('div');
+  btn.id = 'btnSettings';
+  btn.title = 'Settings';
+  toolbar.appendChild(btn);
+
+  // ── build panel HTML ────────────────────────────────
+  const panel = document.createElement('div');
+  panel.id = 'settingsPanel';
+  panel.innerHTML = `
+    <div id="settingsHeader">
+      <span id="settingsTitle">Settings</span>
+      <span id="settingsClose">✕</span>
+    </div>
+    <div class="settingsGroup">
+      <div class="settingsGroupLabel">BRUSH</div>
+      <label class="settingsRow">
+        <span>Oldschool brush <span class="settingsHint">(type "old")</span></span>
+        <input type="checkbox" id="settingOldschool">
+      </label>
+      <label class="settingsRow">
+        <span>Curve smoothing</span>
+        <input type="checkbox" id="settingSmoothing" checked>
+      </label>
+      <div class="settingsRow">
+        <span>Simplify tolerance <span class="settingsHint">(0 = off)</span></span>
+        <div class="settingsSliderWrap">
+          <input type="range" id="settingSimplify" min="0" max="20" step="1" value="5">
+          <span class="settingsVal" id="settingSimplifyVal">5</span>
+        </div>
+      </div>
+    </div>
+    <div class="settingsGroup">
+      <div class="settingsGroupLabel">ONION SKIN</div>
+      <label class="settingsRow">
+        <span>Enable onion skin</span>
+        <input type="checkbox" id="settingOnion" checked>
+      </label>
+      <label class="settingsRow">
+        <span>Show 2nd previous frame</span>
+        <input type="checkbox" id="settingOnion2" checked>
+      </label>
+      <div class="settingsRow">
+        <span>Frame −1 opacity</span>
+        <div class="settingsSliderWrap">
+          <input type="range" id="settingAlpha1" min="0" max="100" step="5" value="30">
+          <span class="settingsVal" id="settingAlpha1Val">30%</span>
+        </div>
+      </div>
+      <div class="settingsRow">
+        <span>Frame −2 opacity</span>
+        <div class="settingsSliderWrap">
+          <input type="range" id="settingAlpha2" min="0" max="100" step="5" value="10">
+          <span class="settingsVal" id="settingAlpha2Val">10%</span>
+        </div>
+      </div>
+    </div>
+    <div class="settingsGroup">
+      <div class="settingsGroupLabel">PLAYBACK</div>
+      <div class="settingsRow">
+        <span>Speed (FPS)</span>
+        <div class="settingsSliderWrap">
+          <input type="range" id="settingFPS" min="1" max="30" step="1" value="10">
+          <span class="settingsVal" id="settingFPSVal">10</span>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(panel);
+
+  // ── styles — match save dialog's #555 dark grey palette ─
+  const style = document.createElement('style');
+  style.textContent = `
+    #btnSettings {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      left: 570px;
+      top: 62px;
+      cursor: pointer;
+      pointer-events: auto;
+      background: url('./graphics/settings.svg') no-repeat center center;
+      background-size: 100% 100%;
+    }
+    /* fallback glyph if svg missing */
+    #btnSettings:not([style*="background-image"])::before,
+    #btnSettings::before {
+      content: '⚙';
+      font-size: 15px;
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      color: #444;
+      line-height: 1;
+      pointer-events: none;
+    }
+    #btnSettings:hover::before { color: #000; }
+
+    #settingsPanel {
+      display: none;
+      position: fixed;
+      z-index: 9000;
+      /* positioned relative to the editor — JS will anchor it */
+      background: #555555;
+      border-radius: 8px;
+      padding: 0;
+      width: 290px;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      color: #fff;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.45);
+    }
+    #settingsPanel.open { display: block; }
+
+    #settingsHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+    #settingsTitle {
+      font-size: 13px;
+      font-weight: bold;
+      color: #fff;
+    }
+    #settingsClose {
+      cursor: pointer;
+      color: #ddd;
+      font-size: 14px;
+      line-height: 1;
+      padding: 2px 4px;
+      border-radius: 3px;
+      transition: background 0.1s;
+    }
+    #settingsClose:hover { background: rgba(255,255,255,0.15); }
+
+    .settingsGroup {
+      padding: 10px 14px 6px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .settingsGroup:last-child { border-bottom: none; padding-bottom: 12px; }
+
+    .settingsGroupLabel {
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 8px;
+    }
+
+    .settingsRow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      gap: 8px;
+      cursor: default;
+    }
+    label.settingsRow { cursor: pointer; }
+    .settingsRow > span { flex: 1; color: #ddd; font-size: 12px; }
+    .settingsHint { color: rgba(255,255,255,0.35); font-size: 10px; }
+
+    .settingsRow input[type=checkbox] {
+      width: 15px;
+      height: 15px;
+      accent-color: #e33;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .settingsSliderWrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .settingsRow input[type=range] {
+      width: 88px;
+      accent-color: #e33;
+      cursor: pointer;
+    }
+    .settingsVal {
+      width: 30px;
+      text-align: right;
+      color: #ffcc88;
+      font-size: 11px;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // ── position panel above the settings button ────────
+  function positionPanel() {
+    const btnRect = btn.getBoundingClientRect();
+    panel.style.left = (btnRect.right - 290) + 'px';
+    panel.style.top  = (btnRect.top - panel.offsetHeight - 6) + 'px';
+  }
+
+  // ── toggle open/close ───────────────────────────────
+  btn.addEventListener('click', () => {
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open')) positionPanel();
+  });
+  document.getElementById('settingsClose').addEventListener('click', () => {
+    panel.classList.remove('open');
+  });
+
+  // close if clicking outside panel and button
+  document.addEventListener('mousedown', (e) => {
+    if (panel.classList.contains('open') && !panel.contains(e.target) && e.target !== btn) {
+      panel.classList.remove('open');
+    }
+  });
+
+  // ── wire up controls ────────────────────────────────
+
+  document.getElementById('settingOldschool').addEventListener('change', e => {
+    oldschoolMode = e.target.checked;
+    settings.oldschoolMode = oldschoolMode;
+  });
+
+  document.getElementById('settingSmoothing').addEventListener('change', e => {
+    settings.smoothing = e.target.checked;
+    render();
+  });
+
+  document.getElementById('settingSimplify').addEventListener('input', e => {
+    settings.simplifyTolerance = parseInt(e.target.value);
+    document.getElementById('settingSimplifyVal').textContent = e.target.value;
+  });
+
+  document.getElementById('settingOnion').addEventListener('change', e => {
+    settings.onionSkin = e.target.checked;
+    render();
+  });
+
+  document.getElementById('settingOnion2').addEventListener('change', e => {
+    settings.onionSkin2 = e.target.checked;
+    render();
+  });
+
+  document.getElementById('settingAlpha1').addEventListener('input', e => {
+    settings.onionAlpha1 = parseInt(e.target.value) / 100;
+    document.getElementById('settingAlpha1Val').textContent = e.target.value + '%';
+    render();
+  });
+
+  document.getElementById('settingAlpha2').addEventListener('input', e => {
+    settings.onionAlpha2 = parseInt(e.target.value) / 100;
+    document.getElementById('settingAlpha2Val').textContent = e.target.value + '%';
+    render();
+  });
+
+  document.getElementById('settingFPS').addEventListener('input', e => {
+    settings.playFPS = parseInt(e.target.value);
+    document.getElementById('settingFPSVal').textContent = e.target.value;
+    if (playing) {
+      clearInterval(playInterval);
+      playInterval = setInterval(() => {
+        currentFrame++;
+        if (currentFrame >= frames.length) currentFrame = 0;
+        render();
+        drawFramesTimeline();
+      }, Math.round(1000 / settings.playFPS));
+    }
+  });
+
+})();
