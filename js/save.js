@@ -234,17 +234,19 @@ async function saveAnimation() {
 
     // 6. Upload GIFs to Supabase Storage
     const upload = async (blob, path) => {
+      // ✅ FIX: upsert: false — never overwrite an existing preview
       const { error } = await db.storage
         .from('previews')
-        .upload(path, blob, { contentType: 'image/gif', upsert: true });
+        .upload(path, blob, { contentType: 'image/gif', upsert: false });
       if (error) throw error;
     };
 
     status.textContent = 'Uploading previews...';
 
+    // ✅ FIX: Scope storage path under user.id so users can't touch each other's files
     await Promise.all([
-      upload(blob200, `${animId}_100.gif`),
-      upload(blob40,  `${animId}_40.gif`)
+      upload(blob200, `${user.id}/${animId}_100.gif`),
+      upload(blob40,  `${user.id}/${animId}_40.gif`)
     ]);
 
     status.textContent = 'Saved!';
