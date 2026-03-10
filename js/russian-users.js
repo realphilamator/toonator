@@ -9,6 +9,7 @@ async function colorRussianUsernames() {
   await Promise.all(usernames.map(async (uname) => {
     try {
       if (RUSSIAN_USERS_CACHE[uname] === undefined) {
+        // On profile pages, PROFILE_USERNAME is already loaded — use cached result if available
         const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_user_by_username`, {
           method: 'POST',
           headers: {
@@ -37,4 +38,21 @@ function observeAndColorUsernames() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
-document.addEventListener('DOMContentLoaded', observeAndColorUsernames);
+// On profile pages, re-run after loadProfile() finishes populating the DOM
+function hookProfilePage() {
+  if (typeof PROFILE_USERNAME === 'undefined') return;
+
+  // The profile avatar and stats load async; wait for the toons_list to be populated
+  const toonsList = document.getElementById('toons_list');
+  if (!toonsList) return;
+
+  const profileObserver = new MutationObserver(() => {
+    colorRussianUsernames();
+  });
+  profileObserver.observe(toonsList, { childList: true, subtree: true });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  observeAndColorUsernames();
+  hookProfilePage();
+});
