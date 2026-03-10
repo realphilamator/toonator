@@ -91,6 +91,7 @@ export async function onRequestGet(context) {
   }
 
   const frames = Array.isArray(toon.frames) ? toon.frames : (toon.frames ? Object.values(toon.frames) : []);
+  const toonSettings = toon.settings || {};
   const frameCount = frames.length || 1;
   const title = toon.title || 'Untitled';
   const description = toon.description || '';
@@ -124,6 +125,7 @@ export async function onRequestGet(context) {
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <script src="/js/auth.js"></script>
+  <script src="/js/toon-player.js"></script>
   <script>
     async function loadIncludes() {
       const header = await fetch('/includes/header.html').then(r => r.text());
@@ -151,7 +153,7 @@ export async function onRequestGet(context) {
         <h2><span id="toon_title">${title}</span></h2>
 
         <div class="player" id="player_container">
-          <canvas id="toonPlayer" width="610" height="350" style="background:#fff;display:block;"></canvas>
+          <!-- toon-player.js builds the canvas and toolbar inside here -->
         </div>
 
         <div class="info">
@@ -239,40 +241,10 @@ export async function onRequestGet(context) {
 // ---- Toon Player ----
 const TOON_FRAMES = ${JSON.stringify(frames)};
 const TOON_ID = '${id}';
-const canvas = document.getElementById('toonPlayer');
-const ctx = canvas.getContext('2d');
-const renderScale = canvas.width / 600;
-let currentFrame = 0;
-let playing = true;
+const TOON_SETTINGS = ${JSON.stringify(toonSettings)};
 
-function drawFrame(frame) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  if (!frame || !frame.strokes) return;
-  for (const stroke of frame.strokes) {
-    if (!stroke.points || stroke.points.length < 2) continue;
-    ctx.beginPath();
-    ctx.strokeStyle = stroke.color || '#000';
-    ctx.lineWidth = (stroke.size || 2) * renderScale;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.moveTo(stroke.points[0].x * renderScale, stroke.points[0].y * renderScale);
-    for (let i = 1; i < stroke.points.length; i++) {
-      ctx.lineTo(stroke.points[i].x * renderScale, stroke.points[i].y * renderScale);
-    }
-    ctx.stroke();
-  }
-}
-
-function playAnimation() {
-  if (TOON_FRAMES.length === 0) return;
-  drawFrame(TOON_FRAMES[currentFrame]);
-  if (TOON_FRAMES.length > 1 && playing) {
-    currentFrame = (currentFrame + 1) % TOON_FRAMES.length;
-    setTimeout(playAnimation, 100);
-  }
-}
-
-playAnimation();
+// Init player — toon-player.js must be loaded before this
+initToonPlayer('player_container', TOON_FRAMES, TOON_SETTINGS);
 
 // ---- Comments ----
 function showCommentForm() {
@@ -300,7 +272,6 @@ async function loadComments() {
     return;
   }
 
-  // Collect unique usernames to look up avatars
   const usernames = [...new Set(data.map(c => c.author_username).filter(Boolean))];
   const avatarMap = {};
 
@@ -416,7 +387,6 @@ async function handleLike() {
       valueEl.textContent = Math.max(0, parseInt(valueEl.textContent) - 1);
     }
   } else {
-    // upsert instead of insert — safe against duplicates
     const { error } = await db
       .from('likes')
       .upsert(
@@ -438,7 +408,6 @@ function handleFavorite() {
   });
 }
 
-// Re-fetch author avatar client-side via username (more reliable than server-side user_id lookup)
 async function loadAuthorAvatar() {
   const username = ${JSON.stringify(authorUsername)};
   if (!username || username === 'unknown') return;
@@ -462,9 +431,7 @@ async function loadAuthorAvatar() {
         }
       }
     }
-  } catch (e) {
-    // keep default avatar on error
-  }
+  } catch (e) {}
 }
 
 loadAuthorAvatar();
