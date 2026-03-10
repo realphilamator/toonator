@@ -123,10 +123,7 @@
       : (toon.frames ? Object.values(toon.frames) : []);
     const frameCount = frames.length;
     const frameStr = frameCount >= 50 ? `<b>${frameCount}</b> frames` : `${frameCount} frames`;
-    const commentCount = toon.comment_count || 0;
-    const commentStr = commentCount > 0
-      ? `${commentCount} comment${commentCount !== 1 ? 's' : ''}`
-      : `<span class="grayb">No comments</span>`;
+    const commentStr = `<span class="grayb">No comments</span>`;
     const medal = (toon.likes > 0) ? `<img class="toonmedal" src="/img/medal.gif"/>` : '';
     const title = escapeHTML(toon.title || 'Untitled');
 
@@ -162,7 +159,7 @@
 
   async function loadPopular() {
     const toons = await apiFetch(
-      '/animations?select=*&order=likes.desc,comment_count.desc&limit=6'
+      '/animations?select=id,title,user_id,frames,likes&order=likes.desc.nullslast&limit=6'
     );
     const list = document.getElementById('popular-list');
     if (!toons || toons.length === 0) {
@@ -175,7 +172,7 @@
 
   async function loadNewest() {
     const toons = await apiFetch(
-      '/animations?select=*&order=created_at.desc&limit=6'
+      '/animations?select=id,title,user_id,frames,likes&order=created_at.desc&limit=6'
     );
     const list = document.getElementById('newest-list');
     if (!toons || toons.length === 0) {
@@ -188,6 +185,7 @@
 
   async function loadGoodPlace() {
     // TODO: implement Good Place feature
+  }
   }
 
   // kick everything off
