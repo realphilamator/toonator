@@ -16,6 +16,7 @@
     );
   </script>
   <script src="/js/auth.js"></script>
+  <script src="/js/russian-users.js"></script>
   <script>
     async function loadIncludes() {
       const header = await fetch('/includes/header.html').then(r => r.text());
@@ -95,7 +96,7 @@
     return `${SUPABASE_URL}/storage/v1/object/public/previews/${id}_${size}.gif`;
   }
 
-  function toonCardHTML(toon, username, russian) {
+  function toonCardHTML(toon, username) {
     const frames = Array.isArray(toon.frames) ? toon.frames : (toon.frames ? Object.values(toon.frames) : []);
     const frameCount = frames.length;
     const frameStr = frameCount >= 50 ? `<b>${frameCount}</b> кадров` : `${frameCount} кадров`;
@@ -105,7 +106,6 @@
       : `<span class="grayb">Нет комментариев</span>`;
     const medal = toon.featured ? `<img class="toonmedal" src="/img/medal.gif"/>` : '';
     const title = escapeHTML(toon.title || 'Без названия');
-    const russianClass = russian ? ' russian' : '';
     return `
       <div class="toon_preview owned">
         ${medal}
@@ -116,7 +116,7 @@
         </div>
         <div class="toon_name"><a class="link" href="/toon/${toon.id}">${title}</a></div>
         <div class="toon_tagline">
-          <a href="/user/${escapeHTML(username)}" class="username foreign${russianClass}">${escapeHTML(username)}</a>,
+          <a href="/user/${escapeHTML(username)}" class="username foreign">${escapeHTML(username)}</a>,
           ${frameStr}
         </div>
         <div class="toon_tagline">${commentStr}</div>
@@ -152,11 +152,11 @@
     await Promise.all(toons.map(async (toon) => {
       if (toon.user_id && !userMap[toon.user_id]) {
         const userData = await rpc('get_user_by_id', { p_user_id: toon.user_id });
-        userMap[toon.user_id] = { username: userData?.[0]?.username || 'unknown', russian: userData?.[0]?.russian || false };
+        userMap[toon.user_id] = userData?.[0]?.username || 'unknown';
       }
     }));
 
-    toonsList.innerHTML = toons.map(t => { const u = userMap[t.user_id] || { username: 'unknown', russian: false }; return toonCardHTML(t, u.username, u.russian); }).join('');
+    toonsList.innerHTML = toons.map(t => toonCardHTML(t, userMap[t.user_id] || 'unknown')).join('');
     const totalPages = Math.ceil(totalCount / TOONS_PER_PAGE);
     const pager = paginatorHTML(page, totalPages);
     document.getElementById('paginator-top').innerHTML = pager;
@@ -169,19 +169,17 @@
     const toon = toons[0];
     const userData = toon.user_id ? await rpc('get_user_by_id', { p_user_id: toon.user_id }) : null;
     const username = userData?.[0]?.username || 'unknown';
-    const russian = userData?.[0]?.russian || false;
     const frames = Array.isArray(toon.frames) ? toon.frames : (toon.frames ? Object.values(toon.frames) : []);
     const commentCount = toon.comment_count || 0;
     const commentStr = commentCount > 0 ? `${commentCount} комментариев` : `<span class="grayb">Нет комментариев</span>`;
     const title = escapeHTML(toon.title || 'Без названия');
-    const russianClass = russian ? ' russian' : '';
     document.getElementById('good-place-toon').innerHTML = `
       <div class="toon_preview large owned">
         <img class="toonmedal" src="/img/medal.gif"/>
         <div class="toon_image"><a href="/toon/${toon.id}" title="${title}"><img alt="${title}" src="${previewUrl(toon.id)}"></a></div>
         <div class="toon_name"><a class="link" href="/toon/${toon.id}">${title}</a></div>
         <div class="toon_tagline">
-          <a href="/user/${escapeHTML(username)}" class="username foreign${russianClass}">${escapeHTML(username)}</a>,
+          <a href="/user/${escapeHTML(username)}" class="username foreign">${escapeHTML(username)}</a>,
           ${frames.length} кадров
         </div>
         <div class="toon_tagline">${commentStr}</div>
@@ -191,24 +189,8 @@
   async function loadLastComments() {
     const comments = await apiFetch('/comments?order=created_at.desc&limit=10');
     if (!comments || comments.length === 0) return;
-
-    const usernameDataMap = {};
-    await Promise.all(comments.map(async (c) => {
-      const uname = c.author_username;
-      if (uname && !usernameDataMap[uname]) {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_user_by_username`, {
-          method: 'POST',
-          headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ p_username: uname })
-        });
-        const userData = await res.json();
-        usernameDataMap[uname] = userData?.[0]?.russian || false;
-      }
-    }));
-
     document.getElementById('last-comments').innerHTML = comments.map((c, i) => {
       const uname = c.author_username || 'unknown';
-      const russianClass = usernameDataMap[uname] ? ' russian' : '';
       return `
   <div class="comment ${i % 2 !== 0 ? 'gray' : ''} last_comments">
     <div class="avatar">
@@ -217,7 +199,7 @@
       </a>
     </div>
     <div class="head">
-      <a href="/user/${escapeHTML(uname)}" class="username foreign${russianClass}">${escapeHTML(uname)}</a>: ${escapeHTML(c.text || '')}
+      <a href="/user/${escapeHTML(uname)}" class="username foreign">${escapeHTML(uname)}</a>: ${escapeHTML(c.text || '')}
     </div>
   </div>`;
     }).join('');
