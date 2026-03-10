@@ -42,14 +42,10 @@ function formatDate(iso) {
 export default async function handler(req, res) {
   const { id } = req.query;
 
-  if (!id) {
-    return res.status(404).send('Not found');
-  }
+  if (!id) return res.status(404).send('Not found');
 
   const toons = await supabase(`/animations?id=eq.${id}&select=*`);
-  if (!toons || toons.length === 0) {
-    return res.status(404).send('Toon not found');
-  }
+  if (!toons || toons.length === 0) return res.status(404).send('Toon not found');
 
   const toon = toons[0];
 
@@ -121,6 +117,7 @@ export default async function handler(req, res) {
   </script>
   <script src="/js/auth.js"></script>
   <script src="/js/toon-player.js"></script>
+  <script src="/js/russian-users.js"></script>
   <script>
     async function loadIncludes() {
       const header = await fetch('/includes/header.html').then(r => r.text());
@@ -137,13 +134,10 @@ export default async function handler(req, res) {
   </script>
 </head>
 <body>
-
 <div id="header_placeholder"></div>
-
 <div id="content_wrap">
   <div id="content">
     <div id="toon_page">
-
       <div class="toon_panel">
         <h2><span id="toon_title">${title}</span></h2>
 
@@ -158,9 +152,7 @@ export default async function handler(req, res) {
             <div class="date">${createdAt}</div>
             ${continuedFromHtml}
           </div>
-
           <div class="prizes"></div>
-
           <div class="buttons">
             <div class="toonmedals"></div>
             <div class="like hover">
@@ -179,15 +171,11 @@ export default async function handler(req, res) {
               </a>
             </div>
           </div>
-
           <div class="line_5"><img src="/img/1.gif"/></div>
-
           <div class="description" id="description_text_div">
             <span id="description_text">${description}</span>
           </div>
-
           ${tagsHtml ? `<div class="tags" style="margin:5px 0;">${tagsHtml}</div>` : ''}
-
           <div class="share">
             <ul class="share">
               <li>Share:</li>
@@ -195,7 +183,6 @@ export default async function handler(req, res) {
               <li><a rel="nofollow" title="Reddit" href="https://reddit.com/submit?url=https://toonator.site/toon/${id}&title=${encodeURIComponent(title)}" target="_blank"><div class="shr_reddit"></div></a></li>
             </ul>
           </div>
-
           <div class="tcontinues"></div>
         </div>
 
@@ -225,7 +212,6 @@ export default async function handler(req, res) {
     </div>
     <div style="clear:both"></div>
   </div>
-
   <div id="donate_placeholder"></div>
   <div id="footer_placeholder"></div>
 </div>
@@ -246,13 +232,7 @@ function showCommentForm() {
 }
 
 async function loadComments() {
-  const { data, error } = await db
-    .from('comments')
-    .select('*')
-    .eq('animation_id', TOON_ID)
-    .order('created_at', { ascending: false })
-    .limit(20);
-
+  const { data, error } = await db.from('comments').select('*').eq('animation_id', TOON_ID).order('created_at', { ascending: false }).limit(20);
   const list = document.getElementById('comments_list');
   if (!data || data.length === 0) {
     list.innerHTML = '<p style="color:#888888;font-size:10pt;padding:10px;">No comments yet.</p>';
@@ -261,16 +241,11 @@ async function loadComments() {
 
   const usernames = [...new Set(data.map(c => c.author_username).filter(Boolean))];
   const avatarMap = {};
-
   await Promise.all(usernames.map(async (uname) => {
     try {
       const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/get_user_by_username', {
         method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_KEY,
-          'Content-Type': 'application/json'
-        },
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({ p_username: uname })
       });
       const userData = await res.json();
@@ -382,7 +357,6 @@ loadAuthorAvatar();
 loadLikes();
 loadComments();
 </script>
-
 </body>
 </html>`;
 

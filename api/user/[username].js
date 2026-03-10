@@ -30,6 +30,7 @@ function getProfileHTML(username, page) {
     const PER_PAGE = 12;
   </script>
   <script src="/js/auth.js"></script>
+  <script src="/js/russian-users.js"></script>
   <script>
     async function loadIncludes() {
       const header = await fetch('/includes/header.html').then(r => r.text());
@@ -49,9 +50,7 @@ function getProfileHTML(username, page) {
 <div id="header_placeholder"></div>
 <div id="content_wrap">
   <div id="content">
-
     <div class="userprofile">
-
       <div class="content_right">
         <div class="center">
           <h3 id="profile_username_wrap">
@@ -69,30 +68,23 @@ function getProfileHTML(username, page) {
         <br/>
         <a id="private_messages_link" href="#" style="display:none; font-size:10pt;">Private messages</a>
       </div>
-
       <div class="content_left">
         <h1><span style="font-weight:normal">
           <a class="nmenu selected" href="/user/${username}/">Album</a> |
           <a class="nmenu" href="/user/${username}/favorites/">Favorites</a> |
           <a class="nmenu" href="/user/${username}/comments/">Comments</a>
         </span></h1>
-
         <div id="paginator_top"></div>
-
         <div class="toons_container">
           <div class="toons_list" id="toons_list">
             <p style="color:#888888; font-size:10pt; padding:10px 0;">Loading...</p>
           </div>
         </div>
-
         <div id="paginator_bottom"></div>
       </div>
-
     </div>
-
     <div style="clear:both"></div>
   </div>
-
   <div id="donate_placeholder"></div>
   <div id="footer_placeholder"></div>
 </div>
