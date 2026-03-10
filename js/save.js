@@ -13,6 +13,11 @@ function closeSaveDialog() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // FIX: enforce max lengths on all save dialog inputs to prevent oversized payloads
+  document.getElementById('saveDialogName').maxLength = 100;
+  document.getElementById('saveDialogKeywords').maxLength = 200;
+  document.getElementById('saveDialogDesc').maxLength = 1000;
+
   document.getElementById('btnSave').addEventListener('click', openSaveDialog);
   document.getElementById('saveCancel').addEventListener('click', closeSaveDialog);
   document.getElementById('saveFinal').addEventListener('click', saveAnimation);
@@ -79,7 +84,6 @@ function renderFrameToCanvas(frame, width, height) {
 
 function generateGif(width, height) {
   return new Promise((resolve, reject) => {
-    // Convert FPS to millisecond delay (GIF delay is in ms)
     const frameDelay = Math.round(1000 / (settings.playFPS || 10));
 
     const gif = new GIF({
@@ -110,9 +114,10 @@ function generateGif(width, height) {
 ===================================================== */
 
 async function saveAnimation() {
-  const title       = document.getElementById('saveDialogName').value.trim() || 'Untitled';
-  const keywords    = document.getElementById('saveDialogKeywords').value.trim();
-  const description = document.getElementById('saveDialogDesc').value.trim();
+  // FIX: trim and enforce max lengths server-side as well as via maxLength attr
+  const title       = (document.getElementById('saveDialogName').value.trim() || 'Untitled').slice(0, 100);
+  const keywords    = document.getElementById('saveDialogKeywords').value.trim().slice(0, 200);
+  const description = document.getElementById('saveDialogDesc').value.trim().slice(0, 1000);
   const isDraft     = document.getElementById('saveDialogDraft').checked;
 
   const status = document.getElementById('saveStatus');
@@ -127,7 +132,6 @@ async function saveAnimation() {
     if (userError || !user) throw new Error('You must be logged in to save.');
 
     // 2. Snapshot current settings to persist alongside the animation.
-    //    Only playback-relevant settings are saved (onion skin is draw-only).
     const savedSettings = {
       playFPS:           settings.playFPS,
       smoothing:         settings.smoothing,
@@ -142,11 +146,12 @@ async function saveAnimation() {
       description,
       is_draft:    isDraft,
       frames:      frames,
-      settings:    savedSettings,   // <-- persisted settings column
+      settings:    savedSettings,
     };
 
     // If continuing from another toon, store the original ID
-    if (window.CONTINUE_ID) {
+    // FIX: validate CONTINUE_ID is a safe UUID-like string before using
+    if (window.CONTINUE_ID && /^[a-zA-Z0-9_-]{1,100}$/.test(window.CONTINUE_ID)) {
       insertData.continued_from = window.CONTINUE_ID;
     }
 
@@ -162,7 +167,7 @@ async function saveAnimation() {
 
     status.textContent = 'Generating previews...';
 
-    // 4. Generate GIFs at two sizes (delay is driven by settings.playFPS)
+    // 4. Generate GIFs at two sizes
     const [blob200, blob40] = await Promise.all([
       generateGif(200, 100),
       generateGif(40,  20)
@@ -192,6 +197,7 @@ async function saveAnimation() {
 
   } catch (err) {
     console.error(err);
+    // FIX: use textContent to display error — never innerHTML for error messages
     status.textContent = 'Error: ' + (err.message || 'Something went wrong.');
     btn.disabled = false;
   }

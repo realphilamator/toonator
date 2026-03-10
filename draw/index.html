@@ -32,12 +32,17 @@ async function loadIncludes() {
 loadIncludes();
 </script>
 <script>
-// Pass ?continue param from this page into the iframe src
+// FIX: validate ?continue param is a safe alphanumeric ID before using it
+// in an iframe src. Without this, a crafted URL could inject arbitrary content.
 (function() {
   const params = new URLSearchParams(window.location.search);
-  const continueId = params.get('continue');
+  const rawContinueId = params.get('continue');
+  // Only allow UUID/alphanumeric IDs — reject anything with special chars
+  const continueId = rawContinueId && /^[a-zA-Z0-9_-]{1,100}$/.test(rawContinueId)
+    ? rawContinueId
+    : null;
   const iframeSrc = continueId
-    ? '/draw_HTML/?continue=' + continueId
+    ? '/draw_HTML/?continue=' + encodeURIComponent(continueId)
     : '/draw_HTML/';
   document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('drawIframe').src = iframeSrc;
@@ -126,6 +131,7 @@ function hideRightPanel() {
     }
 
     // Update page title if continuing
+    // FIX: use textContent (never innerHTML) for setting text from URL params
     (function() {
       const params = new URLSearchParams(window.location.search);
       if (params.get('continue')) {

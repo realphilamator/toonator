@@ -30,6 +30,19 @@ async function rpc(fn, params) {
 const SUPABASE_URL = 'https://ytyhhmwnnlkhhpvsurlm.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0eWhobXdubmxraGhwdnN1cmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzcwNTAsImV4cCI6MjA4ODU1MzA1MH0.XZVH3j6xftSRULfhdttdq6JGIUSgHHJt9i-vXnALjH0';
 
+// ============================================================
+// XSS FIX: Escape all user-supplied strings before inserting
+// into HTML. Used everywhere in the server-side template.
+// ============================================================
+function escapeHTML(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 function formatDate(iso) {
   const d = new Date(iso);
   const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -84,26 +97,32 @@ export default async function handler(req, res) {
         }
       }
       const origAuthorRussianClass = origAuthorRussian ? ' russian' : '';
-      const origTitle = orig.title || 'Untitled';
+      // FIX: escape origTitle and origAuthor
+      const origTitle = escapeHTML(orig.title || 'Untitled');
+      const origAuthorEsc = escapeHTML(origAuthor);
       continuedFromHtml = `<div style="font-size:9pt; margin-top:5px;">
-        Original: <a href="/toon/${orig.id}" class="noh" title="${origTitle} (${origAuthor})">
+        Original: <a href="/toon/${orig.id}" class="noh" title="${origTitle} (${origAuthorEsc})">
           &#x25ce; ${origTitle}
-        </a> by <a href="/user/${origAuthor}" class="username foreign${origAuthorRussianClass}">${origAuthor}</a>
+        </a> by <a href="/user/${origAuthorEsc}" class="username foreign${origAuthorRussianClass}">${origAuthorEsc}</a>
       </div>`;
     }
   }
 
   const frames = Array.isArray(toon.frames) ? toon.frames : (toon.frames ? Object.values(toon.frames) : []);
   const toonSettings = toon.settings || {};
-  const title = toon.title || 'Untitled';
-  const description = toon.description || '';
+  // FIX: escape all user-supplied text used in HTML
+  const title = escapeHTML(toon.title || 'Untitled');
+  const description = escapeHTML(toon.description || '');
   const keywords = toon.keywords || '';
-  const createdAt = formatDate(toon.created_at);
-  const previewUrl = `${SUPABASE_URL}/storage/v1/object/public/previews/${id}_100.gif`;
+  const createdAt = escapeHTML(formatDate(toon.created_at));
+  const previewUrl = escapeHTML(`${SUPABASE_URL}/storage/v1/object/public/previews/${id}_100.gif`);
+  const authorUsernameEsc = escapeHTML(authorUsername);
+  const authorAvatarEsc = escapeHTML(authorAvatar);
 
+  // FIX: escape each tag value individually
   const tagsHtml = keywords
     ? keywords.split(',').map(k => k.trim()).filter(Boolean).map(k =>
-        `<a href="/search/${encodeURIComponent(k)}" class="tag">${k}</a>`
+        `<a href="/search/${encodeURIComponent(k)}" class="tag">${escapeHTML(k)}</a>`
       ).join(' ')
     : '';
 
@@ -151,9 +170,9 @@ export default async function handler(req, res) {
         <div class="player" id="player_container"></div>
         <div class="info">
           <div class="author">
-            <img class="avatar" id="author_avatar" src="${authorAvatar}" onerror="this.src='/img/avatar100.gif'"/>
+            <img class="avatar" id="author_avatar" src="${authorAvatarEsc}" onerror="this.src='/img/avatar100.gif'"/>
             <div class="author_name">
-              <a href="/user/${authorUsername}" class="username foreign${authorRussianClass}">${authorUsername}</a>
+              <a href="/user/${authorUsernameEsc}" class="username foreign${authorRussianClass}">${authorUsernameEsc}</a>
             </div>
             <div class="date">${createdAt}</div>
             ${continuedFromHtml}
@@ -185,8 +204,8 @@ export default async function handler(req, res) {
           <div class="share">
             <ul class="share">
               <li>Share:</li>
-              <li><a rel="nofollow" title="Twitter" href="https://twitter.com/intent/tweet?url=https://toonator.site/toon/${id}&text=${encodeURIComponent(title)}" target="_blank"><div class="shr_tw"></div></a></li>
-              <li><a rel="nofollow" title="Reddit" href="https://reddit.com/submit?url=https://toonator.site/toon/${id}&title=${encodeURIComponent(title)}" target="_blank"><div class="shr_reddit"></div></a></li>
+              <li><a rel="nofollow" title="Twitter" href="https://twitter.com/intent/tweet?url=https://toonator.site/toon/${id}&text=${encodeURIComponent(toon.title || 'Untitled')}" target="_blank"><div class="shr_tw"></div></a></li>
+              <li><a rel="nofollow" title="Reddit" href="https://reddit.com/submit?url=https://toonator.site/toon/${id}&title=${encodeURIComponent(toon.title || 'Untitled')}" target="_blank"><div class="shr_reddit"></div></a></li>
             </ul>
           </div>
           <div class="tcontinues"></div>
@@ -226,6 +245,16 @@ const TOON_ID = '${id}';
 const TOON_SETTINGS = ${JSON.stringify(toonSettings)};
 
 initToonPlayer('player_container', TOON_FRAMES, TOON_SETTINGS);
+
+// ============================================================
+// XSS FIX: Client-side escape helper for all dynamic HTML.
+// Uses the browser's own text encoder — no regex needed.
+// ============================================================
+function escapeHTML(str) {
+  const d = document.createElement('div');
+  d.textContent = str ?? '';
+  return d.innerHTML;
+}
 
 function showCommentForm() {
   db.auth.getUser().then(({ data: { user } }) => {
@@ -267,21 +296,25 @@ async function loadComments() {
     }
   }));
 
+  // FIX: every user-supplied value is passed through escapeHTML()
   list.innerHTML = data.map(c => {
-    const username = c.author_username || 'anonymous';
-    const ud = userDataMap[username] || { avatar: '/img/avatar100.gif', russian: false };
+    const username = escapeHTML(c.author_username || 'anonymous');
+    const ud = userDataMap[c.author_username] || { avatar: '/img/avatar100.gif', russian: false };
     const russianClass = ud.russian ? ' russian' : '';
+    const avatarSrc = escapeHTML(ud.avatar);
     const date = new Date(c.created_at);
-    const dateStr = date.toLocaleDateString('en-US') + ' ' + date.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+    const dateStr = escapeHTML(date.toLocaleDateString('en-US') + ' ' + date.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'}));
+    // FIX: c.text is the main XSS vector — always escape it
+    const commentText = escapeHTML(c.text);
     return \`<div class="comment">
       <div class="avatar">
-        <a href="/user/\${username}"><img class="avatar" src="\${ud.avatar}" onerror="this.src='/img/avatar100.gif'"/></a>
+        <a href="/user/\${username}"><img class="avatar" src="\${avatarSrc}" onerror="this.src='/img/avatar100.gif'"/></a>
       </div>
       <div class="head">
         <a href="/user/\${username}" class="username foreign\${russianClass}">\${username}</a>
         <span class="date"><b>\${dateStr}</b></span>
       </div>
-      <div class="text">\${c.text}</div>
+      <div class="text">\${commentText}</div>
     </div>\`;
   }).join('');
 }
@@ -348,6 +381,7 @@ async function loadAuthorAvatar() {
       const avatarToonId = userData[0].avatar_toon_id || userData[0].avatar_toon || null;
       if (avatarToonId) {
         const avatarEl = document.getElementById('author_avatar');
+        // FIX: set src via .src property (safe) rather than innerHTML
         if (avatarEl) avatarEl.src = SUPABASE_URL + '/storage/v1/object/public/previews/' + avatarToonId + '_100.gif';
       }
     }

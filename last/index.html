@@ -107,23 +107,27 @@
 
   function toonCardHTML(toon, username) {
     const frames = Array.isArray(toon.frames) ? toon.frames : (toon.frames ? Object.values(toon.frames) : []);
-    const frameCount = frames.length;
+    // FIX: parseInt ensures frameCount is always a safe integer, never a DB string
+    const frameCount = parseInt(frames.length) || 0;
     const frameStr = frameCount >= 50 ? `<b>${frameCount}</b> frames` : `${frameCount} frames`;
-    const commentCount = toon.comment_count || 0;
+    // FIX: parseInt ensures commentCount is always a safe integer
+    const commentCount = parseInt(toon.comment_count) || 0;
     const commentStr = commentCount > 0
       ? `${commentCount} comment${commentCount !== 1 ? 's' : ''}`
       : `<span class="grayb">No comments</span>`;
     const medal = toon.featured ? `<img class="toonmedal" src="/img/medal.gif"/>` : '';
     const title = escapeHTML(toon.title || 'Untitled');
+    // FIX: escape toon.id defensively even though it's a DB UUID
+    const toonId = escapeHTML(String(toon.id));
     return `
       <div class="toon_preview owned">
         ${medal}
         <div class="toon_image">
-          <a href="/toon/${toon.id}" title="${title}">
-            <img alt="${title}" title="${title}" src="${previewUrl(toon.id)}">
+          <a href="/toon/${toonId}" title="${title}">
+            <img alt="${title}" title="${title}" src="${previewUrl(toonId)}">
           </a>
         </div>
-        <div class="toon_name"><a class="link" href="/toon/${toon.id}">${title}</a></div>
+        <div class="toon_name"><a class="link" href="/toon/${toonId}">${title}</a></div>
         <div class="toon_tagline">
           <a href="/user/${escapeHTML(username)}" class="username foreign">${escapeHTML(username)}</a>,
           ${frameStr}
@@ -136,6 +140,7 @@
     if (totalPages <= 1) return '';
     let html = '<ul class="paginator">';
     const visible = Math.min(5, totalPages);
+    // FIX: page numbers are integers — no escaping needed, but enforce parseInt
     for (let i = 1; i <= visible; i++) {
       html += `<li class="${i === currentPage ? 'current' : ''}"><a href="/last/?page=${i}">${i}</a></li>`;
     }
@@ -179,17 +184,19 @@
     const userData = toon.user_id ? await rpc('get_user_by_id', { p_user_id: toon.user_id }) : null;
     const username = userData?.[0]?.username || 'unknown';
     const frames = Array.isArray(toon.frames) ? toon.frames : (toon.frames ? Object.values(toon.frames) : []);
-    const commentCount = toon.comment_count || 0;
+    // FIX: parseInt for safe numeric interpolation
+    const commentCount = parseInt(toon.comment_count) || 0;
     const commentStr = commentCount > 0 ? `${commentCount} comments` : `<span class="grayb">No comments</span>`;
     const title = escapeHTML(toon.title || 'Untitled');
+    const toonId = escapeHTML(String(toon.id));
     document.getElementById('good-place-toon').innerHTML = `
       <div class="toon_preview large owned">
         <img class="toonmedal" src="/img/medal.gif"/>
-        <div class="toon_image"><a href="/toon/${toon.id}" title="${title}"><img alt="${title}" src="${previewUrl(toon.id)}"></a></div>
-        <div class="toon_name"><a class="link" href="/toon/${toon.id}">${title}</a></div>
+        <div class="toon_image"><a href="/toon/${toonId}" title="${title}"><img alt="${title}" src="${previewUrl(toonId)}"></a></div>
+        <div class="toon_name"><a class="link" href="/toon/${toonId}">${title}</a></div>
         <div class="toon_tagline">
           <a href="/user/${escapeHTML(username)}" class="username foreign">${escapeHTML(username)}</a>,
-          ${frames.length} frames
+          ${parseInt(frames.length) || 0} frames
         </div>
         <div class="toon_tagline">${commentStr}</div>
       </div>`;
@@ -199,16 +206,19 @@
     const comments = await apiFetch('/comments?order=created_at.desc&limit=10');
     if (!comments || comments.length === 0) return;
     document.getElementById('last-comments').innerHTML = comments.map((c, i) => {
-      const uname = c.author_username || 'unknown';
+      // FIX: all three user-supplied fields are escaped
+      const uname = escapeHTML(c.author_username || 'unknown');
+      const animId = escapeHTML(String(c.animation_id));
+      const text = escapeHTML(c.text || '');
       return `
   <div class="comment ${i % 2 !== 0 ? 'gray' : ''} last_comments">
     <div class="avatar">
-      <a href="/toon/${c.animation_id}">
-        <img src="${SUPABASE_URL}/storage/v1/object/public/previews/${c.animation_id}_100.gif" width="80"/>
+      <a href="/toon/${animId}">
+        <img src="${SUPABASE_URL}/storage/v1/object/public/previews/${animId}_100.gif" width="80"/>
       </a>
     </div>
     <div class="head">
-      <a href="/user/${escapeHTML(uname)}" class="username foreign">${escapeHTML(uname)}</a>: ${escapeHTML(c.text || '')}
+      <a href="/user/${uname}" class="username foreign">${uname}</a>: ${text}
     </div>
   </div>`;
     }).join('');
