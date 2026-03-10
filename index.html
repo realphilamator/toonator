@@ -124,12 +124,10 @@
     const frameCount = frames.length;
     const frameStr = frameCount >= 50 ? `<b>${frameCount}</b> frames` : `${frameCount} frames`;
     const commentStr = `<span class="grayb">No comments</span>`;
-    const medal = (toon.likes > 0) ? `<img class="toonmedal" src="/img/medal.gif"/>` : '';
     const title = escapeHTML(toon.title || 'Untitled');
 
     return `
       <div class="toon_preview owned">
-        ${medal}
         <div class="toon_image">
           <a href="/toon/${toon.id}" title="${title}">
             <img alt="${title}" title="${title}" src="${previewUrl(toon.id)}">
@@ -186,7 +184,7 @@
   async function loadGoodPlace() {
     // TODO: implement Good Place feature
   }
-  
+
 
   // kick everything off
   loadIncludes();
