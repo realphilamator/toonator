@@ -16,22 +16,17 @@
     );
   </script>
   <script src="/js/auth.js"></script>
-  <!-- Primary Meta -->
-<meta name="title" content="Toonator">
-<meta name="description" content="Toonator is online cartoon editing tool.">
-
-<!-- Open Graph -->
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://toonator.pages.dev">
-<meta property="og:title" content="Toonator">
-<meta property="og:description" content="Toonator is online cartoon editing tool.">
-<meta property="og:image" content="/img/toonator320.png">
-
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Toonator">
-<meta name="twitter:description" content="Toonator is online cartoon editing tool.">
-<meta name="twitter:image" content="/img/toonator40.png">
+  <meta name="title" content="Toonator">
+  <meta name="description" content="Toonator is online cartoon editing tool.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://toonator.pages.dev">
+  <meta property="og:title" content="Toonator">
+  <meta property="og:description" content="Toonator is online cartoon editing tool.">
+  <meta property="og:image" content="/img/toonator320.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Toonator">
+  <meta name="twitter:description" content="Toonator is online cartoon editing tool.">
+  <meta name="twitter:image" content="/img/toonator40.png">
 </head>
 <body>
 <div id="donate_placeholder"></div>
@@ -132,7 +127,7 @@
     const commentStr = commentCount > 0
       ? `${commentCount} comment${commentCount !== 1 ? 's' : ''}`
       : `<span class="grayb">No comments</span>`;
-    const medal = toon.featured ? `<img class="toonmedal" src="/img/medal.gif"/>` : '';
+    const medal = (toon.likes > 0) ? `<img class="toonmedal" src="/img/medal.gif"/>` : '';
     const title = escapeHTML(toon.title || 'Untitled');
 
     return `
@@ -167,7 +162,7 @@
 
   async function loadPopular() {
     const toons = await apiFetch(
-      '/animations?select=*&order=comment_count.desc,likes.desc&limit=6'
+      '/animations?select=*&order=likes.desc,comment_count.desc&limit=6'
     );
     const list = document.getElementById('popular-list');
     if (!toons || toons.length === 0) {
@@ -192,34 +187,7 @@
   }
 
   async function loadGoodPlace() {
-    const toons = await apiFetch('/animations?featured=eq.true&order=created_at.desc&limit=1');
-    if (!toons || toons.length === 0) return;
-
-    const toon = toons[0];
-    const userData = toon.user_id ? await rpc('get_user_by_id', { p_user_id: toon.user_id }) : null;
-    const username = userData?.[0]?.username || 'unknown';
-    const frames = Array.isArray(toon.frames) ? toon.frames : (toon.frames ? Object.values(toon.frames) : []);
-    const commentCount = toon.comment_count || 0;
-    const commentStr = commentCount > 0 ? `${commentCount} comments` : `<span class="grayb">No comments</span>`;
-    const title = escapeHTML(toon.title || 'Untitled');
-
-    document.getElementById('good-place-toon').innerHTML = `
-      <div class="toon_preview large owned">
-        <img class="toonmedal" src="/img/medal.gif"/>
-        <div class="toon_image">
-          <a href="/toon/${toon.id}" title="${title}">
-            <img alt="${title}" src="${previewUrl(toon.id)}">
-          </a>
-        </div>
-        <div class="toon_name">
-          <a class="link" href="/toon/${toon.id}">${title}</a>
-        </div>
-        <div class="toon_tagline">
-          <a href="/user/${escapeHTML(username)}" class="username foreign">${escapeHTML(username)}</a>,
-          ${frames.length} frames
-        </div>
-        <div class="toon_tagline">${commentStr}</div>
-      </div>`;
+    // TODO: implement Good Place feature
   }
 
   // kick everything off
