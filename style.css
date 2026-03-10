@@ -1380,7 +1380,6 @@ ul.leftmenu li a.selected {
     right: 0;
     top: 0;
     height: 50px;
-    vertical-align: middle;
     display: block;
     text-decoration: none;
     color: #cccccc;
@@ -1474,6 +1473,14 @@ ul.leftmenu li a.selected {
     height: auto;
 }
 
-.username.russian {
-  color: #050 !important;
+.username.russian { color: #050 !important; }
+
+.username.admin {
+  color: #e53535;
+  font-weight: bold;
+}
+
+.username.mod {
+  color: #e5b800;
+  font-weight: bold;
 }
