@@ -30,31 +30,58 @@ function renderFrameToCanvas(frame, width, height) {
   cx.fillStyle = '#ffffff';
   cx.fillRect(0, 0, width, height);
   const scaleX = width / 600;
-  const scaleY = height / 300;
+
   frame.strokes.forEach(stroke => {
-    if (!stroke.points || stroke.points.length < 2) return;
+    if (!stroke.points || stroke.points.length === 0) return;
+
+    // Oldschool brush — pre-built polygon
+    if (stroke.oldschool && stroke.polygon && stroke.polygon.length > 0) {
+      cx.beginPath();
+      stroke.polygon.forEach((p, i) => {
+        const x = p.x * scaleX, y = p.y * scaleX;
+        i === 0 ? cx.moveTo(x, y) : cx.lineTo(x, y);
+      });
+      cx.closePath();
+      cx.fillStyle = stroke.color;
+      cx.fill();
+      return;
+    }
+
+    if (stroke.points.length < 2) return;
+
     cx.beginPath();
     cx.strokeStyle = stroke.color;
     cx.lineWidth = Math.max(1, stroke.size * scaleX);
     cx.lineCap = 'round';
     cx.lineJoin = 'round';
-    stroke.points.forEach((p, i) => {
-      const x = p.x * scaleX;
-      const y = p.y * scaleY;
-      if (i === 0) cx.moveTo(x, y);
-      else cx.lineTo(x, y);
-    });
+
+    // Use multicurve smoothing if it was enabled when the toon was saved
+    if (settings.smoothing && stroke.points.length > 2) {
+      drawMulticurveRaw(cx, stroke.points, scaleX, false);
+    } else {
+      stroke.points.forEach((p, i) => {
+        const x = p.x * scaleX;
+        const y = p.y * scaleX;
+        if (i === 0) cx.moveTo(x, y);
+        else cx.lineTo(x, y);
+      });
+    }
     cx.stroke();
   });
+
   return c;
 }
 
 /* =====================================================
    GIF GENERATION
+   Uses settings.playFPS for frame delay.
 ===================================================== */
 
 function generateGif(width, height) {
   return new Promise((resolve, reject) => {
+    // Convert FPS to millisecond delay (GIF delay is in ms)
+    const frameDelay = Math.round(1000 / (settings.playFPS || 10));
+
     const gif = new GIF({
       workers: 2,
       quality: 20,
@@ -68,7 +95,7 @@ function generateGif(width, height) {
 
     frames.forEach(frame => {
       const c = renderFrameToCanvas(frame, width, height);
-      gif.addFrame(c, { delay: 100 });
+      gif.addFrame(c, { delay: frameDelay });
     });
 
     gif.on('finished', blob => resolve(blob));
@@ -79,16 +106,17 @@ function generateGif(width, height) {
 
 /* =====================================================
    SAVE ANIMATION
+   Persists frames + all user settings to Supabase.
 ===================================================== */
 
 async function saveAnimation() {
-  const title = document.getElementById('saveDialogName').value.trim() || 'Untitled';
-  const keywords = document.getElementById('saveDialogKeywords').value.trim();
+  const title       = document.getElementById('saveDialogName').value.trim() || 'Untitled';
+  const keywords    = document.getElementById('saveDialogKeywords').value.trim();
   const description = document.getElementById('saveDialogDesc').value.trim();
-  const isDraft = document.getElementById('saveDialogDraft').checked;
+  const isDraft     = document.getElementById('saveDialogDraft').checked;
 
   const status = document.getElementById('saveStatus');
-  const btn = document.getElementById('saveFinal');
+  const btn    = document.getElementById('saveFinal');
 
   btn.disabled = true;
   status.textContent = 'Saving...';
@@ -98,17 +126,26 @@ async function saveAnimation() {
     const { data: { user }, error: userError } = await db.auth.getUser();
     if (userError || !user) throw new Error('You must be logged in to save.');
 
-    // 2. Always insert as a new animation under the current user
+    // 2. Snapshot current settings to persist alongside the animation.
+    //    Only playback-relevant settings are saved (onion skin is draw-only).
+    const savedSettings = {
+      playFPS:           settings.playFPS,
+      smoothing:         settings.smoothing,
+      simplifyTolerance: settings.simplifyTolerance,
+    };
+
+    // 3. Build insert payload
     const insertData = {
-      user_id: user.id,
+      user_id:     user.id,
       title,
       keywords,
       description,
-      is_draft: isDraft,
-      frames: frames
+      is_draft:    isDraft,
+      frames:      frames,
+      settings:    savedSettings,   // <-- persisted settings column
     };
 
-    // If this is a continue, store the original toon's ID as a reference
+    // If continuing from another toon, store the original ID
     if (window.CONTINUE_ID) {
       insertData.continued_from = window.CONTINUE_ID;
     }
@@ -125,13 +162,13 @@ async function saveAnimation() {
 
     status.textContent = 'Generating previews...';
 
-    // 3. Generate GIFs
+    // 4. Generate GIFs at two sizes (delay is driven by settings.playFPS)
     const [blob200, blob40] = await Promise.all([
       generateGif(200, 100),
-      generateGif(40, 20)
+      generateGif(40,  20)
     ]);
 
-    // 4. Upload GIFs to Supabase Storage
+    // 5. Upload GIFs to Supabase Storage
     const upload = async (blob, path) => {
       const { error } = await db.storage
         .from('previews')

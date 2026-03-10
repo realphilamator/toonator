@@ -39,23 +39,20 @@ function formatDate(iso) {
   return `${mm}/${dd}/${yyyy} ${hh}:${min}`;
 }
 
-export async function onRequestGet(context) {
-  const { params } = context;
-  const id = params.id;
+export default async function handler(req, res) {
+  const { id } = req.query;
 
   if (!id) {
-    return new Response('Not found', { status: 404 });
+    return res.status(404).send('Not found');
   }
 
-  // Fetch the toon
   const toons = await supabase(`/animations?id=eq.${id}&select=*`);
   if (!toons || toons.length === 0) {
-    return new Response('Toon not found', { status: 404 });
+    return res.status(404).send('Toon not found');
   }
 
   const toon = toons[0];
 
-  // Fetch author info
   let authorUsername = 'unknown';
   let authorAvatar = '/img/avatar100.gif';
 
@@ -70,7 +67,6 @@ export async function onRequestGet(context) {
     }
   }
 
-  // Check if continued from another toon
   let continuedFromHtml = '';
   if (toon.continued_from) {
     const origToons = await supabase(`/animations?id=eq.${toon.continued_from}&select=id,title,user_id`);
@@ -91,7 +87,7 @@ export async function onRequestGet(context) {
   }
 
   const frames = Array.isArray(toon.frames) ? toon.frames : (toon.frames ? Object.values(toon.frames) : []);
-  const frameCount = frames.length || 1;
+  const toonSettings = toon.settings || {};
   const title = toon.title || 'Untitled';
   const description = toon.description || '';
   const keywords = toon.keywords || '';
@@ -116,7 +112,7 @@ export async function onRequestGet(context) {
   <meta property="og:title" content="${title} - Toonator. Draw animation yourself!"/>
   <meta property="og:description" content="${description || title}"/>
   <meta property="og:image" content="${previewUrl}"/>
-  <meta property="og:url" content="https://toonator.pages.dev/toon/${id}"/>
+  <meta property="og:url" content="https://toonator.site/toon/${id}"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = '${SUPABASE_URL}';
@@ -124,6 +120,7 @@ export async function onRequestGet(context) {
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <script src="/js/auth.js"></script>
+  <script src="/js/toon-player.js"></script>
   <script>
     async function loadIncludes() {
       const header = await fetch('/includes/header.html').then(r => r.text());
@@ -150,9 +147,7 @@ export async function onRequestGet(context) {
       <div class="toon_panel">
         <h2><span id="toon_title">${title}</span></h2>
 
-        <div class="player" id="player_container">
-          <canvas id="toonPlayer" width="610" height="350" style="background:#fff;display:block;"></canvas>
-        </div>
+        <div class="player" id="player_container"></div>
 
         <div class="info">
           <div class="author">
@@ -196,13 +191,13 @@ export async function onRequestGet(context) {
           <div class="share">
             <ul class="share">
               <li>Share:</li>
-              <li><a rel="nofollow" title="Twitter" href="https://twitter.com/intent/tweet?url=https://toonator.pages.dev/toon/${id}&text=${encodeURIComponent(title)}" target="_blank"><div class="shr_tw"></div></a></li>
-              <li><a rel="nofollow" title="Reddit" href="https://reddit.com/submit?url=https://toonator.pages.dev/toon/${id}&title=${encodeURIComponent(title)}" target="_blank"><div class="shr_reddit"></div></a></li>
+              <li><a rel="nofollow" title="Twitter" href="https://twitter.com/intent/tweet?url=https://toonator.site/toon/${id}&text=${encodeURIComponent(title)}" target="_blank"><div class="shr_tw"></div></a></li>
+              <li><a rel="nofollow" title="Reddit" href="https://reddit.com/submit?url=https://toonator.site/toon/${id}&title=${encodeURIComponent(title)}" target="_blank"><div class="shr_reddit"></div></a></li>
             </ul>
           </div>
 
           <div class="tcontinues"></div>
-        </div><!-- .info -->
+        </div>
 
         <div class="left_panel">
           <div class="toon_comments" id="comments">
@@ -224,10 +219,10 @@ export async function onRequestGet(context) {
               <p style="color:#888888;font-size:10pt;padding:10px;">No comments yet.</p>
             </div>
           </div>
-        </div><!-- .left_panel -->
+        </div>
 
-      </div><!-- .toon_panel -->
-    </div><!-- #toon_page -->
+      </div>
+    </div>
     <div style="clear:both"></div>
   </div>
 
@@ -236,51 +231,15 @@ export async function onRequestGet(context) {
 </div>
 
 <script>
-// ---- Toon Player ----
 const TOON_FRAMES = ${JSON.stringify(frames)};
 const TOON_ID = '${id}';
-const canvas = document.getElementById('toonPlayer');
-const ctx = canvas.getContext('2d');
-const renderScale = canvas.width / 600;
-let currentFrame = 0;
-let playing = true;
+const TOON_SETTINGS = ${JSON.stringify(toonSettings)};
 
-function drawFrame(frame) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  if (!frame || !frame.strokes) return;
-  for (const stroke of frame.strokes) {
-    if (!stroke.points || stroke.points.length < 2) continue;
-    ctx.beginPath();
-    ctx.strokeStyle = stroke.color || '#000';
-    ctx.lineWidth = (stroke.size || 2) * renderScale;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.moveTo(stroke.points[0].x * renderScale, stroke.points[0].y * renderScale);
-    for (let i = 1; i < stroke.points.length; i++) {
-      ctx.lineTo(stroke.points[i].x * renderScale, stroke.points[i].y * renderScale);
-    }
-    ctx.stroke();
-  }
-}
+initToonPlayer('player_container', TOON_FRAMES, TOON_SETTINGS);
 
-function playAnimation() {
-  if (TOON_FRAMES.length === 0) return;
-  drawFrame(TOON_FRAMES[currentFrame]);
-  if (TOON_FRAMES.length > 1 && playing) {
-    currentFrame = (currentFrame + 1) % TOON_FRAMES.length;
-    setTimeout(playAnimation, 100);
-  }
-}
-
-playAnimation();
-
-// ---- Comments ----
 function showCommentForm() {
   db.auth.getUser().then(({ data: { user } }) => {
-    if (!user) {
-      showAuth('login');
-      return;
-    }
+    if (!user) { showAuth('login'); return; }
     document.getElementById('comments_form').style.display = 'block';
     document.getElementById('comment_text').focus();
   });
@@ -300,7 +259,6 @@ async function loadComments() {
     return;
   }
 
-  // Collect unique usernames to look up avatars
   const usernames = [...new Set(data.map(c => c.author_username).filter(Boolean))];
   const avatarMap = {};
 
@@ -350,19 +308,15 @@ async function loadComments() {
 async function postComment() {
   const text = document.getElementById('comment_text').value.trim();
   if (!text) return;
-
   const { data: { user } } = await db.auth.getUser();
   if (!user) { showAuth('login'); return; }
-
   const username = user.user_metadata?.username || user.email;
-
   const { error } = await db.from('comments').insert({
     animation_id: TOON_ID,
     user_id: user.id,
     author_username: username,
     text: text
   });
-
   if (!error) {
     document.getElementById('comment_text').value = '';
     document.getElementById('comments_form').style.display = 'none';
@@ -373,61 +327,27 @@ async function postComment() {
 }
 
 async function loadLikes() {
-  const { data: toon } = await db
-    .from('animations')
-    .select('likes')
-    .eq('id', TOON_ID)
-    .single();
-
+  const { data: toon } = await db.from('animations').select('likes').eq('id', TOON_ID).single();
   if (toon) document.getElementById('like_value').textContent = toon.likes || 0;
-
   const { data: { user } } = await db.auth.getUser();
   if (user) {
-    const { data: existing } = await db
-      .from('likes')
-      .select('id')
-      .eq('animation_id', TOON_ID)
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (existing) {
-      document.getElementById('like_link').classList.add('active');
-    }
+    const { data: existing } = await db.from('likes').select('id').eq('animation_id', TOON_ID).eq('user_id', user.id).maybeSingle();
+    if (existing) document.getElementById('like_link').classList.add('active');
   }
 }
 
 async function handleLike() {
   const { data: { user } } = await db.auth.getUser();
   if (!user) { showAuth('login'); return; }
-
   const link = document.getElementById('like_link');
   const valueEl = document.getElementById('like_value');
   const alreadyLiked = link.classList.contains('active');
-
   if (alreadyLiked) {
-    const { error } = await db
-      .from('likes')
-      .delete()
-      .eq('animation_id', TOON_ID)
-      .eq('user_id', user.id);
-
-    if (!error) {
-      link.classList.remove('active');
-      valueEl.textContent = Math.max(0, parseInt(valueEl.textContent) - 1);
-    }
+    const { error } = await db.from('likes').delete().eq('animation_id', TOON_ID).eq('user_id', user.id);
+    if (!error) { link.classList.remove('active'); valueEl.textContent = Math.max(0, parseInt(valueEl.textContent) - 1); }
   } else {
-    // upsert instead of insert — safe against duplicates
-    const { error } = await db
-      .from('likes')
-      .upsert(
-        { animation_id: TOON_ID, user_id: user.id },
-        { onConflict: 'animation_id,user_id', ignoreDuplicates: true }
-      );
-
-    if (!error) {
-      link.classList.add('active');
-      valueEl.textContent = parseInt(valueEl.textContent) + 1;
-    }
+    const { error } = await db.from('likes').upsert({ animation_id: TOON_ID, user_id: user.id }, { onConflict: 'animation_id,user_id', ignoreDuplicates: true });
+    if (!error) { link.classList.add('active'); valueEl.textContent = parseInt(valueEl.textContent) + 1; }
   }
 }
 
@@ -438,18 +358,13 @@ function handleFavorite() {
   });
 }
 
-// Re-fetch author avatar client-side via username (more reliable than server-side user_id lookup)
 async function loadAuthorAvatar() {
   const username = ${JSON.stringify(authorUsername)};
   if (!username || username === 'unknown') return;
   try {
     const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/get_user_by_username', {
       method: 'POST',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_KEY,
-        'Content-Type': 'application/json'
-      },
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ p_username: username })
     });
     const userData = await res.json();
@@ -457,14 +372,10 @@ async function loadAuthorAvatar() {
       const avatarToonId = userData[0].avatar_toon_id || userData[0].avatar_toon || null;
       if (avatarToonId) {
         const avatarEl = document.getElementById('author_avatar');
-        if (avatarEl) {
-          avatarEl.src = SUPABASE_URL + '/storage/v1/object/public/previews/' + avatarToonId + '_100.gif';
-        }
+        if (avatarEl) avatarEl.src = SUPABASE_URL + '/storage/v1/object/public/previews/' + avatarToonId + '_100.gif';
       }
     }
-  } catch (e) {
-    // keep default avatar on error
-  }
+  } catch (e) {}
 }
 
 loadAuthorAvatar();
@@ -475,7 +386,6 @@ loadComments();
 </body>
 </html>`;
 
-  return new Response(html, {
-    headers: { 'Content-Type': 'text/html;charset=UTF-8' }
-  });
+  res.setHeader('Content-Type', 'text/html;charset=UTF-8');
+  res.send(html);
 }
