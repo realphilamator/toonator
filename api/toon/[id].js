@@ -55,11 +55,13 @@ export default async function handler(req, res) {
 
   let authorUsername = 'unknown';
   let authorAvatar = '/img/avatar100.gif';
+  let authorRussian = false;
 
   if (toon.user_id) {
     const userData = await rpc('get_user_by_id', { p_user_id: toon.user_id });
     if (userData && userData.length > 0) {
       authorUsername = userData[0].username || 'unknown';
+      authorRussian = userData[0].russian || false;
       const avatarToonId = userData[0].avatar_toon_id || userData[0].avatar_toon || null;
       if (avatarToonId) {
         authorAvatar = `${SUPABASE_URL}/storage/v1/object/public/previews/${avatarToonId}_100.gif`;
@@ -67,21 +69,28 @@ export default async function handler(req, res) {
     }
   }
 
+  const authorUsernameStyle = authorRussian ? ' style="color:#030;"' : '';
+
   let continuedFromHtml = '';
   if (toon.continued_from) {
     const origToons = await supabase(`/animations?id=eq.${toon.continued_from}&select=id,title,user_id`);
     if (origToons && origToons.length > 0) {
       const orig = origToons[0];
       let origAuthor = 'unknown';
+      let origAuthorRussian = false;
       if (orig.user_id) {
         const origUser = await rpc('get_user_by_id', { p_user_id: orig.user_id });
-        if (origUser && origUser.length > 0) origAuthor = origUser[0].username || 'unknown';
+        if (origUser && origUser.length > 0) {
+          origAuthor = origUser[0].username || 'unknown';
+          origAuthorRussian = origUser[0].russian || false;
+        }
       }
+      const origAuthorStyle = origAuthorRussian ? ' style="color:#030;"' : '';
       const origTitle = orig.title || 'Untitled';
       continuedFromHtml = `<div style="font-size:9pt; margin-top:5px;">
         Original: <a href="/toon/${orig.id}" class="noh" title="${origTitle} (${origAuthor})">
           &#x25ce; ${origTitle}
-        </a> by <a href="/user/${origAuthor}" class="username foreign">${origAuthor}</a>
+        </a> by <a href="/user/${origAuthor}" class="username foreign"${origAuthorStyle}>${origAuthor}</a>
       </div>`;
     }
   }
@@ -153,7 +162,7 @@ export default async function handler(req, res) {
           <div class="author">
             <img class="avatar" id="author_avatar" src="${authorAvatar}" onerror="this.src='/img/avatar100.gif'"/>
             <div class="author_name">
-              <a href="/user/${authorUsername}" class="username foreign">${authorUsername}</a>
+              <a href="/user/${authorUsername}" class="username foreign"${authorUsernameStyle}>${authorUsername}</a>
             </div>
             <div class="date">${createdAt}</div>
             ${continuedFromHtml}
@@ -260,7 +269,7 @@ async function loadComments() {
   }
 
   const usernames = [...new Set(data.map(c => c.author_username).filter(Boolean))];
-  const avatarMap = {};
+  const userDataMap = {};
 
   await Promise.all(usernames.map(async (uname) => {
     try {
@@ -276,28 +285,32 @@ async function loadComments() {
       const userData = await res.json();
       if (userData && userData.length > 0) {
         const avatarToonId = userData[0].avatar_toon_id || userData[0].avatar_toon || null;
-        avatarMap[uname] = avatarToonId
-          ? SUPABASE_URL + '/storage/v1/object/public/previews/' + avatarToonId + '_100.gif'
-          : '/img/avatar100.gif';
+        userDataMap[uname] = {
+          avatar: avatarToonId
+            ? SUPABASE_URL + '/storage/v1/object/public/previews/' + avatarToonId + '_100.gif'
+            : '/img/avatar100.gif',
+          russian: userData[0].russian || false
+        };
       } else {
-        avatarMap[uname] = '/img/avatar100.gif';
+        userDataMap[uname] = { avatar: '/img/avatar100.gif', russian: false };
       }
     } catch (e) {
-      avatarMap[uname] = '/img/avatar100.gif';
+      userDataMap[uname] = { avatar: '/img/avatar100.gif', russian: false };
     }
   }));
 
   list.innerHTML = data.map(c => {
     const username = c.author_username || 'anonymous';
-    const avatar = avatarMap[username] || '/img/avatar100.gif';
+    const ud = userDataMap[username] || { avatar: '/img/avatar100.gif', russian: false };
+    const usernameStyle = ud.russian ? ' style="color:#030;"' : '';
     const date = new Date(c.created_at);
     const dateStr = date.toLocaleDateString('en-US') + ' ' + date.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
     return \`<div class="comment">
       <div class="avatar">
-        <a href="/user/\${username}"><img class="avatar" src="\${avatar}" onerror="this.src='/img/avatar100.gif'"/></a>
+        <a href="/user/\${username}"><img class="avatar" src="\${ud.avatar}" onerror="this.src='/img/avatar100.gif'"/></a>
       </div>
       <div class="head">
-        <a href="/user/\${username}" class="username foreign">\${username}</a>
+        <a href="/user/\${username}" class="username foreign"\${usernameStyle}>\${username}</a>
         <span class="date"><b>\${dateStr}</b></span>
       </div>
       <div class="text">\${c.text}</div>

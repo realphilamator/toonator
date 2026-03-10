@@ -108,6 +108,13 @@ async function loadProfile() {
   }
 
   const userId = profile[0].id;
+  const isRussian = profile[0].russian || false;
+
+  // Apply green color to profile username if russian
+  if (isRussian) {
+    const usernameEl = document.getElementById('profile_username');
+    if (usernameEl) usernameEl.style.color = '#030';
+  }
 
   const { count } = await db.from('animations').select('*', { count: 'exact', head: true }).eq('user_id', userId);
   const totalToons = count || 0;
