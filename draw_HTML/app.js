@@ -631,10 +631,13 @@ function drawDigit(digit,x,y){
 
 function drawFramesTimeline(){
 
-  timelineCtx.fillStyle="white";
-  timelineCtx.fillRect(0,0,516,24);
+  const tlW = timelineCanvas.width;
+  const visibleSlots = Math.floor(tlW / 48);
 
-  endPos = Math.min(startPos + 9, frames.length - 1);
+  timelineCtx.fillStyle="white";
+  timelineCtx.fillRect(0,0,tlW,24);
+
+  endPos = Math.min(startPos + visibleSlots - 1, frames.length - 1);
 
   for(let i=startPos;i<=endPos;i++){
 
@@ -765,14 +768,16 @@ function scrollTimeline() {
 }
 
 function updateSliderMax() {
-  max = Math.max(frames.length - 10, 0);
+  const visibleSlots = Math.floor(timelineCanvas.width / 48);
+  max = Math.max(frames.length - visibleSlots, 0);
   if (pos > max) pos = max;
   snapSlider();
 }
 
 function autoScrollTimeline() {
-  if (currentFrame > startPos + 9) {
-    startPos = currentFrame - 9;
+  const visibleSlots = Math.floor(timelineCanvas.width / 48);
+  if (currentFrame > startPos + visibleSlots - 1) {
+    startPos = currentFrame - (visibleSlots - 1);
     pos = startPos;
     snapSlider();
   }
