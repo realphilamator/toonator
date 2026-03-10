@@ -188,7 +188,7 @@
        LEFT:  play/pause button (width=30, margin 5)
        Remaining centre → scrub bar + slider at y=20
     ---- */
-    const LOGO_W  = 62;
+    const LOGO_W  = 90;
 
     // Right side
     const LOGO_X  = TB_W - LOGO_W - 8;
@@ -230,7 +230,7 @@
       'display:block', 'width:100%',
       'max-width:' + TB_W + 'px',
       'cursor:default', 'background:#fff',
-      'border-top:1px solid #ccc',
+      'border-top:2px solid #000',
     ].join(';');
 
     root.appendChild(borderCanvas);
@@ -275,9 +275,11 @@
         paintSlider(tbCtx, BAR_X + sliderRatio * BAR_W, BAR_Y);
       }
 
-      // Logo — /img/toonator.svg (155×22 native, scaled to fit toolbar)
-      if (logoImg.complete && logoImg.naturalWidth > 0)
-        tbCtx.drawImage(logoImg, LOGO_X, Math.round(TB_H/2 - 11), 62, 22);
+      // Logo — /img/toonator.svg native 155×22, rendered to fill reserved width
+      if (logoImg.complete && logoImg.naturalWidth > 0) {
+        const lh = 22, lw = 90;
+        tbCtx.drawImage(logoImg, LOGO_X, Math.round(TB_H/2 - lh/2), lw, lh);
+      }
     }
 
     /* ---- 100ms jitter interval — mirrors AS3 ENTER_FRAME at 10fps ---- */
