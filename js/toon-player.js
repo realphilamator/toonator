@@ -293,6 +293,11 @@
       else          renderFrameStrokes(bCtx, frames[curFrame], 1, -1);
     }
 
+    /* ---- Preload Toonator logo SVG from /img/toonator.svg ---- */
+    const logoImg = new Image();
+    logoImg.src = '/img/toonator.svg';
+    logoImg.onload = () => renderToolbar();
+
     /* ---- Render toolbar ---- */
     function renderToolbar() {
       tbCtx.clearRect(0, 0, TB_W, TB_H);
@@ -322,12 +327,9 @@
       paintExpandIcon(tbCtx,     EXP_X, TB_H/2 - 10);
       paintFullscreenIcon(tbCtx, FS_X,  TB_H/2 - 10);
 
-      // Logo — "Toonator" in the original hand-drawn font style
-      tbCtx.font         = 'bold 14px "Comic Sans MS", cursive';
-      tbCtx.fillStyle    = '#bbb';
-      tbCtx.textAlign    = 'left';
-      tbCtx.textBaseline = 'middle';
-      tbCtx.fillText('Toonator', LOGO_X, TB_H/2);
+      // Logo — /img/toonator.svg (155×22 native, scaled to fit toolbar)
+      if (logoImg.complete && logoImg.naturalWidth > 0)
+        tbCtx.drawImage(logoImg, LOGO_X, Math.round(TB_H/2 - 11), 62, 22);
     }
 
     /* ---- 100ms jitter interval — mirrors AS3 ENTER_FRAME at 10fps ---- */
