@@ -111,7 +111,7 @@ export async function onRequestGet(context) {
   <title>${title} - Toonator.com - Draw animation online!</title>
   <link rel="shortcut icon" href="/img/favicon-eyes.png"/>
   <link href="/css/font.css" type="text/css" rel="stylesheet"/>
-  <link href="/css/images.css" type="text/css" rel="stylesheet"/>
+  <link href="/css/images_ru.css" type="text/css" rel="stylesheet"/>
   <link href="/style.css" type="text/css" rel="stylesheet"/>
   <meta property="og:title" content="${title} - Toonator. Draw animation yourself!"/>
   <meta property="og:description" content="${description || title}"/>

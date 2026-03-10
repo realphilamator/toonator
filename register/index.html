@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Sign up - Toonator</title>
+  <title>Регистрация - Мультатор</title>
   <link rel="shortcut icon" href="/img/favicon-eyes.png"/>
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/css/font.css">
-  <link rel="stylesheet" href="/css/images.css">
+  <link rel="stylesheet" href="/css/images_ru.css">
   <link rel="stylesheet" href="/css/register.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
@@ -109,9 +109,22 @@ async function registerUser() {
   if (error) {
     document.getElementById('err_general').style.display = 'block';
     document.getElementById('err_general').innerText = error.message;
-  } else {
-    window.location.href = '/';
+    return;
   }
+
+  const { error: insertError } = await db.from('profiles').insert({
+    id: data.user.id,
+    username: username,
+    russian: true
+  });
+
+  if (insertError) {
+    document.getElementById('err_general').style.display = 'block';
+    document.getElementById('err_general').innerText = insertError.message;
+    return;
+  }
+
+  window.location.href = '/';
 }
 </script>
 </body>

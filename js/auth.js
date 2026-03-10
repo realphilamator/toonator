@@ -73,13 +73,23 @@ async function submitAuth() {
   const errorEl = document.getElementById('authError');
 
   if (!email || !password) {
-    errorEl.innerText = 'Please enter your email and password.';
+    errorEl.innerText = 'Пожалуйста, введите email и пароль.';
     return;
   }
 
   let result;
   if (authMode === 'join') {
     result = await db.auth.signUp({ email, password });
+
+    // After signup, set russian = true and username = '005500' in users table
+    if (!result.error && result.data?.user) {
+      await db.from('users').insert({
+        id: result.data.user.id,
+        username: '005500',
+        russian: true
+      });
+    }
+
   } else {
     result = await db.auth.signInWithPassword({ email, password });
   }
