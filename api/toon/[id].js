@@ -382,7 +382,6 @@ loadAuthorAvatar();
 loadLikes();
 loadComments();
 </script>
-
 </body>
 </html>`;
 
