@@ -112,7 +112,17 @@ async function registerUser() {
     return;
   }
 
-  window.location.href = '/';
+  // Tell the user to check their email instead of silently redirecting
+  if (data.user && !data.session) {
+    // Email confirmation is required
+    document.getElementById('err_general').style.display = 'block';
+    document.getElementById('err_general').style.color = 'green';
+    document.getElementById('err_general').innerText = 
+      'Проверьте вашу почту для подтверждения регистрации.';
+  } else {
+    // Auto-confirmed, go home
+    window.location.href = '/';
+  }
 }
 </script>
 </body>
