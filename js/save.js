@@ -234,11 +234,11 @@ async function saveAnimation() {
 
     // 6. Upload GIFs to Supabase Storage
     const upload = async (blob, path) => {
-      // ✅ FIX: upsert: false — never overwrite an existing preview
-      const { error } = await db.storage
+      const result = await db.storage
         .from('previews')
         .upload(path, blob, { contentType: 'image/gif', upsert: false });
-      if (error) throw error;
+      console.log('upload result:', result);
+      if (result.error) throw result.error;
     };
 
     status.textContent = 'Uploading previews...';
