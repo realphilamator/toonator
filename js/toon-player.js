@@ -117,7 +117,7 @@
   function paintBar(ctx, x, y, w) {
     const h = 4;
     ctx.save();
-    ctx.fillStyle = '#555';
+    ctx.fillStyle = '#fff';
     ctx.beginPath();
     ctx.moveTo(x, y + h);
     const steps = Math.max(2, Math.floor(w / 30));
@@ -209,11 +209,12 @@
     const showBar = totalSteps >= 10;      // mirrors AS3: hidden if total < 10
 
     /* ---- Layout constants (all in canvas px) ---- */
-    const BTN_AREA = 36;   // width reserved for play/pause button
-    const BAR_L    = BTN_AREA + 8;          // bar left edge
-    const BAR_R    = W - 70;                // bar right edge (leave room for counter)
-    const BAR_W    = BAR_R - BAR_L;
-    const BAR_Y    = TB_H / 2;              // vertical centre of bar
+    const BTN_AREA   = 36;    // width reserved for play/pause button
+    const COUNTER_W  = 90;    // reserved width for "NNN / NNN strokes"
+    const BAR_L      = BTN_AREA + 8;              // bar left edge
+    const BAR_R      = W - COUNTER_W - 8;         // bar right edge, leaves room for counter
+    const BAR_W      = BAR_R - BAR_L;
+    const BAR_Y      = TB_H / 2;                  // vertical centre of bar
 
     /* ---- DOM: two stacked canvases, no overlap ---- */
     root.innerHTML = '';
