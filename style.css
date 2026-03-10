@@ -1476,11 +1476,11 @@ ul.leftmenu li a.selected {
 .username.russian { color: #050 !important; }
 
 .username.admin {
-  color: #e53535;
+  color: #e53535 !important;
   font-weight: bold;
 }
 
 .username.mod {
-  color: #e5b800;
+  color: #e5b800 !important;
   font-weight: bold;
 }
