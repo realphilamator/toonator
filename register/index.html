@@ -40,7 +40,17 @@
 
         <label>
           <p>Имя пользователя:</p>
-          <input class="input" type="text" id="reg_username">
+          <!--
+            FIX: maxlength enforced in HTML. Pattern hint shown to user.
+            Allowed: letters, numbers, underscore, hyphen. 3–30 chars.
+            This prevents usernames containing < > " ' which are the root
+            cause of the stored XSS vector in auth.js's updateAuthUI().
+          -->
+          <input class="input" type="text" id="reg_username" maxlength="30"
+                 placeholder="Letters, numbers, _ or -">
+          <span class="error" id="err_username" style="display:none;">
+            Имя пользователя должно содержать от 3 до 30 символов: только буквы, цифры, _ или -
+          </span>
         </label>
 
         <label>
@@ -75,6 +85,11 @@
 </div>
 
 <script>
+// FIX: strict username pattern — only alphanumeric, underscore, hyphen, 3–30 chars.
+// This is the critical fix: a username with < > or <script> would become a stored
+// XSS payload displayed in auth.js's updateAuthUI() on every page for that user.
+const USERNAME_PATTERN = /^[a-zA-Z0-9_-]{3,30}$/;
+
 const fields = ['reg_username', 'reg_password1', 'reg_password2', 'reg_email'];
 fields.forEach(id => {
   document.getElementById(id).addEventListener('input', validateForm);
@@ -86,12 +101,15 @@ function validateForm() {
   const password2 = document.getElementById('reg_password2').value;
   const email = document.getElementById('reg_email').value.trim();
 
+  // FIX: validate username format, not just presence
+  const usernameValid = USERNAME_PATTERN.test(username);
+  document.getElementById('err_username').style.display = (username && !usernameValid) ? 'inline' : 'none';
   document.getElementById('err_password').style.display = password1 ? 'none' : 'inline';
   document.getElementById('err_email').style.display = email ? 'none' : 'inline';
   document.getElementById('err_password_match').style.display =
     (password2 && password1 !== password2) ? 'inline' : 'none';
 
-  const valid = username && password1 && password1 === password2 && email;
+  const valid = usernameValid && password1 && password1 === password2 && email;
   document.getElementById('reg_submit').disabled = !valid;
 }
 
@@ -99,6 +117,14 @@ async function registerUser() {
   const username = document.getElementById('reg_username').value.trim();
   const password = document.getElementById('reg_password1').value;
   const email = document.getElementById('reg_email').value.trim();
+
+  // FIX: double-check username pattern before submitting, in case JS validation
+  // was bypassed (e.g. via devtools)
+  if (!USERNAME_PATTERN.test(username)) {
+    document.getElementById('err_username').style.display = 'inline';
+    document.getElementById('reg_submit').disabled = true;
+    return;
+  }
 
   const { data, error } = await db.auth.signUp({
     email,
@@ -130,6 +156,10 @@ async function registerUser() {
     document.getElementById('err_general').style.color = 'green';
     document.getElementById('err_general').innerText = 
       'Проверьте вашу почту для подтверждения регистрации.';
+    const errEl = document.getElementById('err_general');
+    errEl.style.display = 'block';
+    // FIX: use textContent not innerText to prevent injection via error messages
+    errEl.textContent = error.message;
   } else {
     // Auto-confirmed, go home
     window.location.href = '/';

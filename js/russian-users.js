@@ -4,7 +4,15 @@ async function colorRussianUsernames() {
   const usernameEls = document.querySelectorAll('a.username');
   if (!usernameEls.length) return;
 
-  const usernames = [...new Set([...usernameEls].map(el => el.textContent.trim()).filter(Boolean))];
+  const usernames = [...new Set(
+    [...usernameEls]
+      .map(el => el.textContent.trim())
+      .filter(Boolean)
+      // FIX: only send usernames that look like valid usernames to the API.
+      // This prevents a secondary XSS vector where a malicious string injected
+      // into a .username element gets forwarded to the backend as an API param.
+      .filter(u => /^[a-zA-Z0-9_\- ]{1,50}$/.test(u))
+  )];
 
   await Promise.all(usernames.map(async (uname) => {
     try {

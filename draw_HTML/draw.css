@@ -12,6 +12,7 @@ html, body {
 
 canvas {
   display: block;
+  touch-action: none;
 }
 
 #bottomBar {
@@ -408,3 +409,4 @@ label.settingsRow { cursor: pointer; }
   font-size: 11px;
   flex-shrink: 0;
 }
+

@@ -458,13 +458,14 @@ function updateCursor() {
    DRAW INPUT
 ===================================================== */
 
-canvas.addEventListener("mousedown", (e) => {
+canvas.addEventListener("pointerdown", (e) => {
+  canvas.setPointerCapture(e.pointerId);  // keep tracking even if pointer leaves canvas
   stopIfPlaying();
   drawing = true;
   currentStroke = {
     size: brushSize,
-    color: eraserMode ? '#000' : color,  // Store black for eraser
-    eraser: eraserMode,  // NEW: flag to use destination-out
+    color: eraserMode ? '#000' : color,
+    eraser: eraserMode,
     points: [],
     oldschool: oldschoolMode,
     polygon: null
@@ -476,7 +477,7 @@ canvas.addEventListener("mousedown", (e) => {
   frames[currentFrame].strokes.push(currentStroke);
 });
 
-canvas.addEventListener("mousemove", (e) => {
+canvas.addEventListener("pointermove", (e) => {
   if (!drawing) return;
   currentStroke.points.push({
     x: e.offsetX / renderScale,
@@ -485,17 +486,15 @@ canvas.addEventListener("mousemove", (e) => {
   render();
 });
 
-canvas.addEventListener("mouseup", () => {
+canvas.addEventListener("pointerup", (e) => {
   if (!drawing) return;
   drawing = false;
   ctx.beginPath();
 
-  // simplify points on mouse-up — tolerance 0 means skip entirely
   if (currentStroke && currentStroke.points.length > 2 && settings.simplifyTolerance > 0) {
     currentStroke.points = simplifyPoints(currentStroke.points, settings.simplifyTolerance);
   }
 
-  // NEW: build oldschool polygon outline after simplification
   if (currentStroke && currentStroke.oldschool && currentStroke.points.length >= 2) {
     currentStroke.polygon = buildOldschoolPolygon(currentStroke.points, currentStroke.size / 2);
   }
@@ -505,18 +504,17 @@ canvas.addEventListener("mouseup", () => {
   render();
 });
 
-// NEW: Stop drawing when mouse leaves canvas
-canvas.addEventListener("mouseleave", () => {
+canvas.addEventListener("pointerleave", (e) => {
+  // Only fires when pointer leaves WITHOUT capture (e.g. stylus hovering out)
+  // With setPointerCapture, pointerup handles the normal end-of-stroke case
   if (!drawing) return;
   drawing = false;
   ctx.beginPath();
 
-  // simplify points on mouse leave
   if (currentStroke && currentStroke.points.length > 2 && settings.simplifyTolerance > 0) {
     currentStroke.points = simplifyPoints(currentStroke.points, settings.simplifyTolerance);
   }
 
-  // build oldschool polygon outline after simplification
   if (currentStroke && currentStroke.oldschool && currentStroke.points.length >= 2) {
     currentStroke.polygon = buildOldschoolPolygon(currentStroke.points, currentStroke.size / 2);
   }

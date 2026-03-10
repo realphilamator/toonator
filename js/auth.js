@@ -1,12 +1,26 @@
 let authMode = 'login';
 
+// ============================================================
+// XSS FIX: escape all user-supplied strings before inserting
+// into innerHTML. Used in updateAuthUI() for username.
+// ============================================================
+function escapeHTML(str) {
+  const d = document.createElement('div');
+  d.textContent = str ?? '';
+  return d.innerHTML;
+}
+
 async function updateAuthUI() {
   const { data: { user } } = await db.auth.getUser();
   const menu = document.getElementById('newmenu');
   if (!menu) return;
 
   if (user) {
-    const username = user.user_metadata?.username || user.email;
+    // FIX: escape username before injecting into innerHTML —
+    // a malicious username like <script>... would execute on every page otherwise.
+    const rawUsername = user.user_metadata?.username || user.email;
+    const username = escapeHTML(rawUsername);
+
     menu.innerHTML = `
       <li id="mnumessages">
         <a href="/messages/"><span class="counter"></span></a>
@@ -95,7 +109,8 @@ async function submitAuth() {
   }
 
   if (result.error) {
-    errorEl.innerText = result.error.message;
+    // FIX: use textContent not innerText to prevent any injection via error messages
+    errorEl.textContent = result.error.message;
   } else {
     closeAuth();
     updateAuthUI();
