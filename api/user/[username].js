@@ -17,7 +17,7 @@ function getProfileHTML(username, page) {
   <link rel="shortcut icon" href="/img/favicon-eyes.png"/>
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/css/font.css">
-  <link rel="stylesheet" href="/css/images_ru.css">
+  <link rel="stylesheet" href="/css/images.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const { createClient } = supabase;
