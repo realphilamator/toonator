@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Last toons - Toonator.com</title>
+    <title>Messages - Toonator</title>
     <link rel="shortcut icon" href="/img/favicon-eyes.png" />
     <link rel="stylesheet" href="/style.css" />
     <link rel="stylesheet" href="/css/font.css" />
@@ -10,58 +10,65 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/js/config.js" type="module"></script>
     <script src="/js/auth.js"></script>
-    <script src="/js/color-username.js"></script>
   </head>
   <body>
-    <div id="donate_placeholder"></div>
     <div id="header_placeholder"></div>
-
     <div id="content_wrap">
       <div id="content">
-        <div class="content_left">
-          <h1>
-            <a href="/oldschool" class="nmenu selected">Oldschool</a>
-            |
-            <a href="/colorful" class="nmenu">Colorfull</a>
-            |
-            <a href="/sandbox" class="nmenu">Sandbox</a>
-          </h1>
-
-          <div class="paginator" id="paginator-top"></div>
-
-          <div class="toons_container">
-            <div class="toons_list" id="toons-list">
-              <div style="text-align: center; color: #888; padding: 20px">
-                Loading...
-              </div>
-            </div>
+        <span class="profile">
+          <div class="content_right">
+            <span id="recipient_info"></span>
           </div>
-
-          <div class="paginator" id="paginator-bottom"></div>
-        </div>
-
-        <div class="content_right">
-          <h1><a href="/goodplace/">Good Place</a></h1>
-          <div id="good-place-toon"></div>
-
-          <h1>Last comments</h1>
-          <div id="last-comments"></div>
-        </div>
-
-        <div class="clear"></div>
+          <div class="content_left">
+            <h1 id="page_title">Messages</h1>
+            <div id="message_form" style="display: none">
+              <span class="form">
+                <span class="form1"></span>
+                <textarea
+                  id="message_text"
+                  placeholder="Write a message..."
+                  style="
+                    border: 1px solid #cccccc;
+                    margin: 10px;
+                    width: 580px;
+                    font-family: Arial;
+                    font-size: 10pt;
+                  "
+                ></textarea>
+              </span>
+              <span
+                class="form2"
+                style="
+                  text-align: right;
+                  margin-right: 10px;
+                  margin-bottom: 10px;
+                "
+              >
+                <button
+                  onclick="
+                    sendMessage();
+                    return false;
+                  "
+                >
+                  Send
+                </button>
+              </span>
+            </div>
+            <div id="messages_list" class="toon_comments"></div>
+          </div>
+        </span>
+        <div style="clear: both"></div>
+        <div id="footer_placeholder"></div>
       </div>
-      <div id="footer_placeholder"></div>
     </div>
 
     <script type="module">
-      import { initLastPage } from "/js/pages/last-page.js";
+      import { initMessages } from "/js/pages/messages-page.js";
 
-      // Initialize when DOM is ready
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initLastPage);
-      } else {
-        initLastPage();
-      }
+      const params = new URLSearchParams(window.location.search);
+      const recipientUsername = params.get("username");
+
+      initMessages(recipientUsername);
     </script>
   </body>
 </html>

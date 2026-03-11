@@ -2,13 +2,9 @@
 
 import { supabaseRequest, rpc, escapeHTML } from "/js/api.js";
 import { loadIncludes } from "/js/utils/includes.js";
-import "/js/color-username.js";
+import { colorUsernames } from "/js/color-username.js";
 
 const SUPABASE_URL = "https://ytyhhmwnnlkhhpvsurlm.supabase.co";
-
-// ============================================================
-// Helper Functions
-// ============================================================
 
 function previewUrl(id, size = 100) {
   return `${SUPABASE_URL}/storage/v1/object/public/previews/${id}_${size}.gif`;
@@ -48,9 +44,7 @@ async function resolveUsernames(toons) {
   await Promise.all(
     toons.map(async (toon) => {
       if (toon.user_id && !userMap[toon.user_id]) {
-        const userData = await rpc("get_user_by_id", {
-          p_user_id: toon.user_id,
-        });
+        const userData = await rpc("get_user_by_id", { p_user_id: toon.user_id });
         userMap[toon.user_id] = userData?.[0]?.username || "unknown";
       }
     }),
@@ -64,14 +58,12 @@ async function loadPopular() {
   );
   const list = document.getElementById("popular-list");
   if (!toons || toons.length === 0) {
-    list.innerHTML =
-      '<div style="text-align:center;color:#888;padding:10px;">No toons yet.</div>';
+    list.innerHTML = '<div style="text-align:center;color:#888;padding:10px;">No toons yet.</div>';
     return;
   }
   const userMap = await resolveUsernames(toons);
-  list.innerHTML = toons
-    .map((t) => toonCardHTML(t, userMap[t.user_id] || "unknown"))
-    .join("");
+  list.innerHTML = toons.map((t) => toonCardHTML(t, userMap[t.user_id] || "unknown")).join("");
+  await colorUsernames();
 }
 
 async function loadNewest() {
@@ -80,23 +72,17 @@ async function loadNewest() {
   );
   const list = document.getElementById("newest-list");
   if (!toons || toons.length === 0) {
-    list.innerHTML =
-      '<div style="text-align:center;color:#888;padding:10px;">No toons yet.</div>';
+    list.innerHTML = '<div style="text-align:center;color:#888;padding:10px;">No toons yet.</div>';
     return;
   }
   const userMap = await resolveUsernames(toons);
-  list.innerHTML = toons
-    .map((t) => toonCardHTML(t, userMap[t.user_id] || "unknown"))
-    .join("");
+  list.innerHTML = toons.map((t) => toonCardHTML(t, userMap[t.user_id] || "unknown")).join("");
+  await colorUsernames();
 }
 
 async function loadGoodPlace() {
   // TODO: implement Good Place feature
 }
-
-// ============================================================
-// Main Initialization
-// ============================================================
 
 export async function initHome() {
   await loadIncludes();

@@ -2,19 +2,15 @@
 import { getMessages, postMessage, getProfileByUsername } from "/js/api.js";
 import { loadIncludes } from "/js/utils/includes.js";
 import { db } from "/js/config.js";
-import "/js/color-username.js";
+import { colorUsernames } from "/js/color-username.js";
 
 let currentRecipient = null;
 let currentUser = null;
 
 export async function initMessages(recipientUsername) {
-  // Load includes
   await loadIncludes();
 
-  // Get current user
-  const {
-    data: { user },
-  } = await db.auth.getUser();
+  const { data: { user } } = await db.auth.getUser();
   currentUser = user;
 
   if (!user) {
@@ -24,7 +20,6 @@ export async function initMessages(recipientUsername) {
     return;
   }
 
-  // If recipient specified, load conversation
   if (recipientUsername) {
     currentRecipient = recipientUsername;
     const { profile } = await getProfileByUsername(recipientUsername);
@@ -36,13 +31,12 @@ export async function initMessages(recipientUsername) {
       return;
     }
 
-    document.getElementById("page_title").textContent =
-      "Messages with " + recipientUsername;
+    document.getElementById("page_title").textContent = "Messages with " + recipientUsername;
     document.getElementById("recipient_info").innerHTML =
-      `<p>Conversation with <a href=\"/user/${encodeURIComponent(recipientUsername)}\" class=\"username\">${recipientUsername}</a></p>`;
+      `<p>Conversation with <a href="/user/${encodeURIComponent(recipientUsername)}" class="username">${recipientUsername}</a></p>`;
     document.getElementById("message_form").style.display = "block";
 
-    // Load messages
+    await colorUsernames();
     await loadMessages();
   } else {
     document.getElementById("page_title").textContent = "Messages";
@@ -52,14 +46,12 @@ export async function initMessages(recipientUsername) {
     return;
   }
 
-  // Setup send button
   window.sendMessage = async function () {
     if (!currentRecipient) return;
     const text = document.getElementById("message_text").value.trim();
     if (!text) return;
 
     const { success, error } = await postMessage(currentRecipient, text);
-
     if (success) {
       document.getElementById("message_text").value = "";
       await loadMessages();
@@ -73,12 +65,10 @@ async function loadMessages() {
   if (!currentRecipient) return;
 
   const messages = await getMessages(currentRecipient, currentUser?.id);
-
   const list = document.getElementById("messages_list");
 
   if (messages.length === 0) {
-    list.innerHTML =
-      '<p style="color:#888888;font-size:10pt;padding:10px;">No messages yet.</p>';
+    list.innerHTML = '<p style="color:#888888;font-size:10pt;padding:10px;">No messages yet.</p>';
     return;
   }
 
@@ -88,12 +78,8 @@ async function loadMessages() {
       const sender = msg.sender_username || (isSent ? "You" : currentRecipient);
       const date = new Date(msg.created_at);
       const dateStr =
-        date.toLocaleDateString("en-US") +
-        " " +
-        date.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
+        date.toLocaleDateString("en-US") + " " +
+        date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
 
       return `
     <div class="comment" style="${isSent ? "text-align:right;" : ""}">
@@ -102,8 +88,7 @@ async function loadMessages() {
         <span class="date"><b>${dateStr}</b></span>
       </div>
       <div class="text">${msg.text}</div>
-    </div>
-  `;
+    </div>`;
     })
     .join("");
 }

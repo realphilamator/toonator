@@ -8,13 +8,9 @@ import {
   updateUserAvatar,
 } from "/js/api.js";
 import { loadIncludes } from "/js/utils/includes.js";
-import {
-  renderPaginator,
-  calculateTotalPages,
-  getCurrentPageFromURL,
-} from "/js/paginator.js";
+import { renderPaginator, calculateTotalPages, getCurrentPageFromURL } from "/js/paginator.js";
 import { db } from "/js/config.js";
-import "/js/color-username.js";
+import { colorUsernames } from "/js/color-username.js";
 
 const PER_PAGE = 12;
 let currentUsername = "";
@@ -25,10 +21,8 @@ export async function initProfile(username) {
   currentUsername = username;
   currentPage = getCurrentPageFromURL();
 
-  // Load includes (header, footer, modal)
   await loadIncludes();
 
-  // Load profile data
   const { profile } = await getProfileByUsername(username);
   if (!profile) {
     document.getElementById("toons_list").innerHTML =
@@ -37,27 +31,18 @@ export async function initProfile(username) {
     return;
   }
 
-  // Update page title
   document.getElementById("page_title").textContent = `${username} - Toonator`;
-  document.getElementById("profile_username_wrap").href =
-    `/user/${encodeURIComponent(username)}`;
+  document.getElementById("profile_username_wrap").href = `/user/${encodeURIComponent(username)}`;
   document.getElementById("profile_username").textContent = username;
 
-  // Load stats
   const userId = profile.id;
-  const { totalToons, draftCount, commentCount } =
-    await getProfileStats(userId);
+  const { totalToons, draftCount, commentCount } = await getProfileStats(userId);
   document.getElementById("stat_toons").textContent = totalToons;
   document.getElementById("stat_comments").textContent = commentCount;
 
-  // Check if own profile
-  const {
-    data: { user: currentUser },
-  } = await db.auth.getUser();
-  const isOwnProfile =
-    currentUser && currentUser.user_metadata?.username === username;
+  const { data: { user: currentUser } } = await db.auth.getUser();
+  const isOwnProfile = currentUser && currentUser.user_metadata?.username === username;
 
-  // Set avatar
   const avatarEl = document.getElementById("profile_avatar");
   const avatarToon = isOwnProfile
     ? currentUser?.user_metadata?.avatar_toon || profile.avatar_toon
@@ -66,11 +51,8 @@ export async function initProfile(username) {
   if (avatarToon) {
     avatarEl.src = `https://ytyhhmwnnlkhhpvsurlm.supabase.co/storage/v1/object/public/previews/${avatarToon}_100.gif`;
   }
-  avatarEl.onerror = () => {
-    avatarEl.src = "/img/avatar100.gif";
-  };
+  avatarEl.onerror = () => { avatarEl.src = "/img/avatar100.gif"; };
 
-  // Show change avatar option if own profile
   if (isOwnProfile) {
     avatarEl.insertAdjacentHTML(
       "afterend",
@@ -80,24 +62,21 @@ export async function initProfile(username) {
     document.getElementById("stat_drafts").textContent = draftCount;
   }
 
-  // Show private messages link if viewing another profile and logged in
   if (currentUser && !isOwnProfile) {
     const pmLink = document.getElementById("private_messages_link");
     pmLink.href = `/messages?username=${encodeURIComponent(username)}`;
     pmLink.style.display = "";
   }
 
-  // Setup tab switching
-  setupTabSwitching(userId, totalToons);
+  // Color the profile username link in the sidebar
+  await colorUsernames();
 
-  // Load initial view (Album)
+  setupTabSwitching(userId, totalToons);
   await loadAlbumView(userId);
 
-  // Setup global function for changing avatar
   window.changeAvatar = async function () {
     const toonId = prompt("Enter toon ID to use as avatar:");
     if (!toonId) return;
-
     const { success, error } = await updateUserAvatar(username, toonId);
     if (success) {
       document.getElementById("profile_avatar").src =
@@ -115,14 +94,9 @@ function setupTabSwitching(userId, totalToons) {
   tabs.forEach((tab) => {
     tab.addEventListener("click", async (e) => {
       e.preventDefault();
-
-      // Update active tab
       tabs.forEach((t) => t.classList.remove("selected"));
       tab.classList.add("selected");
-
-      // Determine which tab was clicked
       const tabText = tab.textContent.toLowerCase();
-
       if (tabText.includes("album")) {
         currentTab = "album";
         await loadAlbumView(userId, totalToons);
@@ -140,18 +114,8 @@ function setupTabSwitching(userId, totalToons) {
 async function loadAlbumView(userId, totalToons) {
   const { toons, commentCounts } = await getUserToons(userId, 1, PER_PAGE);
   renderToons(toons, commentCounts);
-  renderPaginator(
-    calculateTotalPages(totalToons, PER_PAGE),
-    currentUsername,
-    1,
-    "paginator_top",
-  );
-  renderPaginator(
-    calculateTotalPages(totalToons, PER_PAGE),
-    currentUsername,
-    1,
-    "paginator_bottom",
-  );
+  renderPaginator(calculateTotalPages(totalToons, PER_PAGE), currentUsername, 1, "paginator_top");
+  renderPaginator(calculateTotalPages(totalToons, PER_PAGE), currentUsername, 1, "paginator_bottom");
 }
 
 async function loadFavoritesView(userId) {
@@ -169,11 +133,7 @@ async function loadFavoritesView(userId) {
 }
 
 async function loadCommentsView(userId) {
-  const { toons, commentCounts } = await getUserCommentedToons(
-    userId,
-    1,
-    PER_PAGE,
-  );
+  const { toons, commentCounts } = await getUserCommentedToons(userId, 1, PER_PAGE);
   if (toons.length === 0) {
     document.getElementById("toons_list").innerHTML =
       '<p style="color:#888888;font-size:10pt;padding:10px 0;">No commented toons yet.</p>';
@@ -189,36 +149,30 @@ async function loadCommentsView(userId) {
 function renderToons(toons, commentCounts) {
   const list = document.getElementById("toons_list");
   if (toons.length === 0) {
-    list.innerHTML =
-      '<p style="color:#888888;font-size:10pt;padding:10px 0;">No toons yet.</p>';
+    list.innerHTML = '<p style="color:#888888;font-size:10pt;padding:10px 0;">No toons yet.</p>';
     return;
   }
 
   list.innerHTML = toons
     .map((toon) => {
-      const frames = Array.isArray(toon.frames)
-        ? toon.frames
-        : toon.frames
-          ? Object.values(toon.frames)
-          : [];
+      const frames = Array.isArray(toon.frames) ? toon.frames : toon.frames ? Object.values(toon.frames) : [];
       const frameCount = frames.length || 1;
       const title = toon.title || "Untitled";
-      const frameLabel =
-        frameCount === 1 ? "1 frame" : `<b>${frameCount}</b> frames`;
+      const frameLabel = frameCount === 1 ? "1 frame" : `<b>${frameCount}</b> frames`;
       const cc = commentCounts[toon.id] || 0;
-      const commentLabel =
-        cc === 0
-          ? '<span class="grayb">No comments</span>'
-          : `<b>${cc}</b> comment${cc === 1 ? "" : "s"}`;
+      const commentLabel = cc === 0
+        ? '<span class="grayb">No comments</span>'
+        : `<b>${cc}</b> comment${cc === 1 ? "" : "s"}`;
 
       return `<div class="toon_preview toon_preview_${toon.id}">
-        <div class=\"toon_image\"><a href=\"/toon/${toon.id}\" title=\"${title}\">
-          <img src=\"https://ytyhhmwnnlkhhpvsurlm.supabase.co/storage/v1/object/public/previews/${toon.id}_100.gif\" width=\"200\" height=\"100\" alt=\"${title}\" onerror=\"this.src='/img/avatar100.gif'\"/>
+        <div class="toon_image"><a href="/toon/${toon.id}" title="${title}">
+          <img src="https://ytyhhmwnnlkhhpvsurlm.supabase.co/storage/v1/object/public/previews/${toon.id}_100.gif" width="200" height="100" alt="${title}" onerror="this.src='/img/avatar100.gif'"/>
         </a></div>
-        <div class=\"toon_name\"><a class=\"link\" href=\"/toon/${toon.id}\">${title}</a></div>
+        <div class="toon_name"><a class="link" href="/toon/${toon.id}">${title}</a></div>
         <div class="toon_tagline">${frameLabel}</div>
         <div class="toon_tagline">${commentLabel}</div>
       </div>`;
     })
     .join("");
+  // No usernames in profile toon cards, no colorUsernames() needed here
 }
