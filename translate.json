@@ -123,6 +123,13 @@
         "load_btn_local": "load local",
         "btn_cancel": "cancel",
         "btn_save": "save"
+      },
+      "maintenance": {
+        "title": "Maintenance - Toonator",
+        "heading": "Site Maintenance",
+        "status": "The site is temporarily offline for maintenance.",
+        "updates": "We're doing some updates and improvements.",
+        "return_later": "Please check back later today."
       }
     }
   },
@@ -250,6 +257,13 @@
         "load_btn_local": "загрузить локально",
         "btn_cancel": "отмена",
         "btn_save": "сохранить"
+      },
+      "maintenance": {
+        "title": "Технические работы - Мультатор",
+        "heading": "Технические работы",
+        "status": "Сайт временно недоступен из-за технических работ.",
+        "updates": "Мы проводим обновления и улучшения.",
+        "return_later": "Пожалуйста, зайдите позже."
       }
     }
   }
