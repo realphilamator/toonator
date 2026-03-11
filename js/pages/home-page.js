@@ -2,6 +2,7 @@
 
 import { supabaseRequest, rpc, escapeHTML } from "/js/api.js";
 import { loadIncludes } from "/js/utils/includes.js";
+import "/js/color-username.js";
 
 const SUPABASE_URL = "https://ytyhhmwnnlkhhpvsurlm.supabase.co";
 

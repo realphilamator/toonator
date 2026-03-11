@@ -1,6 +1,7 @@
 // Last Page Controller - Main logic for last toons page
 import { db } from "/js/config.js";
 import { loadIncludes } from "/js/utils/includes.js";
+import "/js/color-username.js";
 
 const SUPABASE_URL = "https://ytyhhmwnnlkhhpvsurlm.supabase.co";
 const SUPABASE_ANON_KEY =

@@ -14,6 +14,7 @@ import {
   getCurrentPageFromURL,
 } from "/js/paginator.js";
 import { db } from "/js/config.js";
+import "/js/color-username.js";
 
 const PER_PAGE = 12;
 let currentUsername = "";

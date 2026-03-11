@@ -1,5 +1,6 @@
 // Comments Component - Handles toon comments
 import { getToonComments, postComment, escapeHTML } from "/js/api.js";
+import "/js/color-username.js";
 import { db } from "/js/config.js";
 
 export async function loadComments(toonId) {

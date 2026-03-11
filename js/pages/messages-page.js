@@ -2,6 +2,7 @@
 import { getMessages, postMessage, getProfileByUsername } from "/js/api.js";
 import { loadIncludes } from "/js/utils/includes.js";
 import { db } from "/js/config.js";
+import "/js/color-username.js";
 
 let currentRecipient = null;
 let currentUser = null;
