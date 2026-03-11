@@ -296,17 +296,23 @@ setTimeout(()=>{el.className="mod-status"},4000)
 }
 
 if (!user) {
-  document.getElementById("access-denied").innerHTML = `
-    <div style="margin-top:40px">
-      You must be signed in to access the moderation panel.
-      <br><br>
-      <button class="mod-btn btn-search" onclick="promptLogin()">
-        Sign In
-      </button>
-    </div>
-  `;
-  document.getElementById("access-denied").style.display = "block";
-  return;
+  const email = prompt("Admin email:");
+  if (!email) return;
+
+  const password = prompt("Password:");
+  if (!password) return;
+
+  const { error } = await db.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    alert("Login failed: " + error.message);
+    return;
+  }
+
+  location.reload();
 }
 
 async function searchUser(){
