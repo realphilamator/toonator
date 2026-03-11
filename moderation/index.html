@@ -58,7 +58,12 @@ async function init() {
   currentUserRole = profile?.role || "user";
 
   if (currentUserRole !== "mod" && currentUserRole !== "admin") {
-    document.getElementById("access-denied").style.display = "block";
+    const denied = document.getElementById("access-denied");
+    denied.innerHTML = `
+      You don't have permission to view this page.<br><br>
+      <button onclick="logout()">Log Out</button>
+    `;
+    denied.style.display = "block";
     return;
   }
 
