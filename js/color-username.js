@@ -1,16 +1,20 @@
 const RUSSIAN_USERS_CACHE = {};
 
 async function colorRussianUsernames() {
-  // Only select elements that haven't been processed yet
   const usernameEls = document.querySelectorAll('a.username:not([data-colored])');
   if (!usernameEls.length) return;
 
-  // Mark them immediately to prevent re-processing before async completes
+  // Mark immediately to prevent re-processing
   usernameEls.forEach(el => el.setAttribute('data-colored', '1'));
 
   const usernames = [...new Set(
     [...usernameEls]
-      .map(el => el.textContent.trim())
+      .map(el => {
+        // Extract username from href="/user/USERNAME" — more reliable than textContent
+        const href = el.getAttribute('href') || '';
+        const match = href.match(/\/user\/([^/?#]+)/);
+        return match ? decodeURIComponent(match[1]) : null;
+      })
       .filter(Boolean)
       .filter(u => /^[a-zA-Z0-9_\- ]{1,50}$/.test(u))
   )];
@@ -34,12 +38,11 @@ async function colorRussianUsernames() {
         };
       }
       const cached = RUSSIAN_USERS_CACHE[uname];
-      document.querySelectorAll('a.username').forEach(el => {
-        if (el.textContent.trim() === uname) {
-          if (cached.role === 'admin') el.classList.add('admin');
-          else if (cached.role === 'mod') el.classList.add('mod');
-          else if (cached.russian) el.classList.add('russian');
-        }
+      // Match by href instead of textContent
+      document.querySelectorAll(`a.username[href="/user/${encodeURIComponent(uname)}"]`).forEach(el => {
+        if (cached.role === 'admin') el.classList.add('admin');
+        else if (cached.role === 'mod') el.classList.add('mod');
+        else if (cached.russian) el.classList.add('russian');
       });
     } catch (e) {}
   }));
@@ -51,4 +54,8 @@ function observeAndColorUsernames() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
-document.addEventListener('DOMContentLoaded', observeAndColorUsernames);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', observeAndColorUsernames);
+} else {
+  observeAndColorUsernames();
+}
