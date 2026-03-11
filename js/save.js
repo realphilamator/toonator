@@ -1,5 +1,5 @@
 /* =====================================================
-   SAVE DIALOG
+   SAVE DIALOG - v2
 ===================================================== */
 
 function openSaveDialog() {
@@ -13,7 +13,6 @@ function closeSaveDialog() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // FIX: enforce max lengths on all save dialog inputs to prevent oversized payloads
   document.getElementById('saveDialogName').maxLength = 100;
   document.getElementById('saveDialogKeywords').maxLength = 200;
   document.getElementById('saveDialogDesc').maxLength = 1000;
@@ -39,7 +38,6 @@ function renderFrameToCanvas(frame, width, height) {
   frame.strokes.forEach(stroke => {
     if (!stroke.points || stroke.points.length === 0) return;
 
-    // Oldschool brush — pre-built polygon
     if (stroke.oldschool && stroke.polygon && stroke.polygon.length > 0) {
       cx.beginPath();
       stroke.polygon.forEach((p, i) => {
@@ -60,7 +58,6 @@ function renderFrameToCanvas(frame, width, height) {
     cx.lineCap = 'round';
     cx.lineJoin = 'round';
 
-    // Use multicurve smoothing if it was enabled when the toon was saved
     if (settings.smoothing && stroke.points.length > 2) {
       drawMulticurveRaw(cx, stroke.points, scaleX, false);
     } else {
@@ -79,7 +76,6 @@ function renderFrameToCanvas(frame, width, height) {
 
 /* =====================================================
    GIF GENERATION
-   Uses settings.playFPS for frame delay.
 ===================================================== */
 
 function generateGif(width, height) {
@@ -110,11 +106,9 @@ function generateGif(width, height) {
 
 /* =====================================================
    SAVE ANIMATION
-   Persists frames + all user settings to Supabase.
 ===================================================== */
 
 async function saveAnimation() {
-  // FIX: trim and enforce max lengths server-side as well as via maxLength attr
   const title       = (document.getElementById('saveDialogName').value.trim() || 'Untitled').slice(0, 100);
   const keywords    = document.getElementById('saveDialogKeywords').value.trim().slice(0, 200);
   const description = document.getElementById('saveDialogDesc').value.trim().slice(0, 1000);
@@ -130,8 +124,9 @@ async function saveAnimation() {
     // 1. Get current user
     const { data: { user }, error: userError } = await db.auth.getUser();
     if (userError || !user) throw new Error('You must be logged in to save.');
+    console.log('[save] user ok:', user.id);
 
-    // 2. Snapshot current settings to persist alongside the animation.
+    // 2. Snapshot settings
     const savedSettings = {
       playFPS:           settings.playFPS,
       smoothing:         settings.smoothing,
@@ -149,8 +144,6 @@ async function saveAnimation() {
       settings:    savedSettings,
     };
 
-    // If continuing from another toon, store the original ID
-    // FIX: validate CONTINUE_ID is a safe UUID-like string before using
     if (window.CONTINUE_ID && /^[a-zA-Z0-9_-]{1,100}$/.test(window.CONTINUE_ID)) {
       insertData.continued_from = window.CONTINUE_ID;
     }
@@ -164,6 +157,7 @@ async function saveAnimation() {
     if (insertError) throw insertError;
 
     const animId = anim.id;
+    console.log('[save] animation inserted:', animId);
 
     status.textContent = 'Generating previews...';
 
@@ -172,13 +166,16 @@ async function saveAnimation() {
       generateGif(200, 100),
       generateGif(40,  20)
     ]);
+    console.log('[save] GIFs generated, sizes:', blob200.size, blob40.size);
 
     // 5. Upload GIFs to Supabase Storage
     const upload = async (blob, path) => {
-      const { error } = await db.storage
+      console.log('[save] uploading:', path, 'size:', blob.size);
+      const result = await db.storage
         .from('previews')
         .upload(path, blob, { contentType: 'image/gif', upsert: true });
-      if (error) throw error;
+      console.log('[save] upload result for', path, ':', JSON.stringify(result));
+      if (result.error) throw result.error;
     };
 
     status.textContent = 'Uploading previews...';
@@ -188,6 +185,7 @@ async function saveAnimation() {
       upload(blob40,  `${animId}_40.gif`)
     ]);
 
+    console.log('[save] all done!');
     status.textContent = 'Saved!';
 
     setTimeout(() => {
@@ -196,8 +194,7 @@ async function saveAnimation() {
     }, 800);
 
   } catch (err) {
-    console.error(err);
-    // FIX: use textContent to display error — never innerHTML for error messages
+    console.error('[save] ERROR:', err);
     status.textContent = 'Error: ' + (err.message || 'Something went wrong.');
     btn.disabled = false;
   }
