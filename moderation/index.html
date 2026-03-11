@@ -1,351 +1,512 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Mod Panel - Toonator</title>
-  <link rel="shortcut icon" href="/img/favicon-eyes.png"/>
-  <link rel="stylesheet" href="/style.css">
-  <link rel="stylesheet" href="/css/font.css">
-  <link rel="stylesheet" href="/css/images.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const { createClient } = supabase;
-    const db = createClient(
-      'https://ytyhhmwnnlkhhpvsurlm.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0eWhobXdubmxraGhwdnN1cmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzcwNTAsImV4cCI6MjA4ODU1MzA1MH0.XZVH3j6xftSRULfhdttdq6JGIUSgHHJt9i-vXnALjH0'
-    );
-  </script>
-  <script src="/js/auth.js"></script>
-  <style>
-    .mod-section { margin: 18px 0 0 0; }
-    .mod-section h2 {
-      font: 20pt ToonatorFont;
-      border-bottom: 1px solid #eeeeee;
-      margin-bottom: 10px;
-      padding-bottom: 4px;
-      text-align: left;
-    }
-    .mod-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-      flex-wrap: wrap;
-    }
-    .mod-input {
-      border: 1px solid #cccccc;
-      border-radius: 5px;
-      font: 14pt ToonatorFont;
-      padding: 6px 10px;
-      width: 320px;
-      box-shadow: 0 0 2px #DDD inset;
-    }
-    .mod-input:focus { outline: 0; }
-    .mod-btn {
-      border: 1px solid #cccccc;
-      border-radius: 5px;
-      font: 13pt ToonatorFont;
-      padding: 6px 16px;
-      cursor: pointer;
-      height: auto;
-      box-shadow: 0 0 2px #DDD inset;
-    }
-    .mod-btn:hover { box-shadow: 0 0 3px #999; border-color: #999; }
-    .mod-btn:disabled { opacity: 0.4; cursor: default; }
-    .btn-search  { background: #d0e4f7; }
-    .btn-ban     { background: #f7b8b8; }
-    .btn-add-ip  { background: #b8d4f7; }
-    .btn-promote { background: #b8f7c0; }
-    .btn-remove  { background: #eeeeee; }
+  <head>
+    <meta charset="UTF-8" />
+    <title>Mod Panel - Toonator</title>
+    <link rel="shortcut icon" href="/img/favicon-eyes.png" />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/css/font.css" />
+    <link rel="stylesheet" href="/css/images.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      const { createClient } = supabase;
+      const db = createClient(
+        "https://ytyhhmwnnlkhhpvsurlm.supabase.co",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0eWhobXdubmxraGhwdnN1cmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzcwNTAsImV4cCI6MjA4ODU1MzA1MH0.XZVH3j6xftSRULfhdttdq6JGIUSgHHJt9i-vXnALjH0",
+      );
+    </script>
+    <script src="/js/auth.js"></script>
+    <style>
+      .mod-section {
+        margin: 18px 0 0 0;
+      }
+      .mod-section h2 {
+        font: 20pt ToonatorFont;
+        border-bottom: 1px solid #eeeeee;
+        margin-bottom: 10px;
+        padding-bottom: 4px;
+        text-align: left;
+      }
+      .mod-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+      }
+      .mod-input {
+        border: 1px solid #cccccc;
+        border-radius: 5px;
+        font: 14pt ToonatorFont;
+        padding: 6px 10px;
+        width: 320px;
+        box-shadow: 0 0 2px #ddd inset;
+      }
+      .mod-input:focus {
+        outline: 0;
+      }
+      .mod-btn {
+        border: 1px solid #cccccc;
+        border-radius: 5px;
+        font: 13pt ToonatorFont;
+        padding: 6px 16px;
+        cursor: pointer;
+        height: auto;
+        box-shadow: 0 0 2px #ddd inset;
+      }
+      .mod-btn:hover {
+        box-shadow: 0 0 3px #999;
+        border-color: #999;
+      }
+      .mod-btn:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+      .btn-search {
+        background: #d0e4f7;
+      }
+      .btn-ban {
+        background: #f7b8b8;
+      }
+      .btn-add-ip {
+        background: #b8d4f7;
+      }
+      .btn-promote {
+        background: #b8f7c0;
+      }
+      .btn-remove {
+        background: #eeeeee;
+      }
 
-    .user-card {
-      background: #eeeeee;
-      border-radius: 6px;
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      flex-wrap: wrap;
-      margin-bottom: 6px;
-    }
-    .user-card .uname {
-      font: bold 15pt ToonatorFont;
-      min-width: 160px;
-    }
-    .user-card .uname.admin { color: red; }
-    .user-card .uname.mod   { color: #007f7f; }
-    .user-card .umeta { font-size: 9pt; color: #888888; flex: 1; }
-    .user-card .uactions { display: flex; gap: 6px; flex-wrap: wrap; }
+      .user-card {
+        background: #eeeeee;
+        border-radius: 6px;
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 6px;
+      }
+      .user-card .uname {
+        font: bold 15pt ToonatorFont;
+        min-width: 160px;
+      }
+      .user-card .uname.admin {
+        color: red;
+      }
+      .user-card .uname.mod {
+        color: #007f7f;
+      }
+      .user-card .umeta {
+        font-size: 9pt;
+        color: #888888;
+        flex: 1;
+      }
+      .user-card .uactions {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
 
-    table.ip-table {
-      border-collapse: collapse;
-      width: 100%;
-      font-size: 10pt;
-      margin-top: 8px;
-    }
-    table.ip-table th {
-      font: bold 12pt ToonatorFont;
-      text-align: left;
-      border-bottom: 1px solid #cccccc;
-      padding: 4px 8px;
-      background: #eeeeee;
-    }
-    table.ip-table td {
-      padding: 5px 8px;
-      border-bottom: 1px solid #eeeeee;
-      vertical-align: middle;
-    }
-    table.ip-table tr:last-child td { border-bottom: none; }
+      table.ip-table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 10pt;
+        margin-top: 8px;
+      }
+      table.ip-table th {
+        font: bold 12pt ToonatorFont;
+        text-align: left;
+        border-bottom: 1px solid #cccccc;
+        padding: 4px 8px;
+        background: #eeeeee;
+      }
+      table.ip-table td {
+        padding: 5px 8px;
+        border-bottom: 1px solid #eeeeee;
+        vertical-align: middle;
+      }
+      table.ip-table tr:last-child td {
+        border-bottom: none;
+      }
 
-    .mod-status {
-      font: 12pt ToonatorFont;
-      padding: 8px 12px;
-      border-radius: 5px;
-      margin: 8px 0;
-      display: none;
-    }
-    .mod-status.ok  { background: #ccffcc; display: block; }
-    .mod-status.err { background: #ffcccc; display: block; }
+      .mod-status {
+        font: 12pt ToonatorFont;
+        padding: 8px 12px;
+        border-radius: 5px;
+        margin: 8px 0;
+        display: none;
+      }
+      .mod-status.ok {
+        background: #ccffcc;
+        display: block;
+      }
+      .mod-status.err {
+        background: #ffcccc;
+        display: block;
+      }
 
-    #confirmOverlay {
-      display: none;
-      position: fixed; z-index: 999;
-      width: 100%; height: 100%; top: 0; left: 0;
-      background: rgba(127,127,127,0.5);
-    }
-    #confirmBox {
-      display: none;
-      position: fixed;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: #fff;
-      border: 1px solid #cccccc;
-      border-radius: 10px;
-      padding: 24px 28px;
-      width: 420px;
-      z-index: 1001;
-    }
-    #confirmBox h2 {
-      font: 22pt ToonatorFont;
-      border-bottom: 1px solid #eee;
-      margin-bottom: 12px;
-    }
-    #confirmBox p { font-size: 11pt; margin-bottom: 16px; }
-    #confirmBox .actions { display: flex; gap: 10px; justify-content: flex-end; }
+      #confirmOverlay {
+        display: none;
+        position: fixed;
+        z-index: 999;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background: rgba(127, 127, 127, 0.5);
+      }
+      #confirmBox {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #fff;
+        border: 1px solid #cccccc;
+        border-radius: 10px;
+        padding: 24px 28px;
+        width: 420px;
+        z-index: 1001;
+      }
+      #confirmBox h2 {
+        font: 22pt ToonatorFont;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 12px;
+      }
+      #confirmBox p {
+        font-size: 11pt;
+        margin-bottom: 16px;
+      }
+      #confirmBox .actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+      }
 
-    #access-denied {
-      display: none;
-      text-align: center;
-      padding: 60px 20px;
-      font: 20pt ToonatorFont;
-      color: #888888;
-    }
-    #mod-content { display: none; }
-  </style>
-</head>
-<body>
-<div id="header_placeholder"></div>
-<div id="content_wrap">
-  <div id="content">
-    <div class="sn">
+      #access-denied {
+        display: none;
+        text-align: center;
+        padding: 60px 20px;
+        font: 20pt ToonatorFont;
+        color: #888888;
+      }
+      #mod-content {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="header_placeholder"></div>
+    <div id="content_wrap">
+      <div id="content">
+        <div class="sn">
+          <div id="access-denied">
+            You don't have permission to view this page.
+          </div>
 
-      <div id="access-denied">
-        You don't have permission to view this page.
+          <div id="mod-content">
+            <h1>Mod Panel</h1>
+            <div class="mod-status" id="mod-status"></div>
+
+            <!-- BAN USER -->
+            <div class="mod-section">
+              <h2>Ban User</h2>
+              <div class="mod-row">
+                <input
+                  class="mod-input"
+                  type="text"
+                  id="search-username"
+                  placeholder="Username..."
+                />
+                <button class="mod-btn btn-search" onclick="searchUser()">
+                  Search
+                </button>
+              </div>
+              <div id="user-result"></div>
+            </div>
+
+            <!-- ROLE MANAGEMENT -->
+            <div class="mod-section">
+              <h2>Roles</h2>
+              <div class="mod-row">
+                <input
+                  class="mod-input"
+                  type="text"
+                  id="role-username"
+                  placeholder="Username..."
+                />
+                <select
+                  id="role-select"
+                  style="
+                    font: 13pt ToonatorFont;
+                    padding: 6px 10px;
+                    border: 1px solid #ccc;
+                    border-radius: 5px;
+                  "
+                >
+                  <option value="user">user</option>
+                  <option value="mod">mod</option>
+                  <option value="admin">admin</option>
+                </select>
+                <button class="mod-btn btn-promote" onclick="setRole()">
+                  Set Role
+                </button>
+              </div>
+              <div id="role-result"></div>
+            </div>
+
+            <!-- IP BANS -->
+            <div class="mod-section">
+              <h2>IP Bans</h2>
+              <div class="mod-row">
+                <input
+                  class="mod-input"
+                  type="text"
+                  id="ban-ip"
+                  placeholder="IP address..."
+                />
+                <input
+                  class="mod-input"
+                  type="text"
+                  id="ban-ip-reason"
+                  placeholder="Reason (optional)"
+                  style="width: 220px"
+                />
+                <button class="mod-btn btn-add-ip" onclick="addIpBan()">
+                  Add Ban
+                </button>
+              </div>
+              <div id="ip-list">
+                <span style="color: #888; font: 12pt ToonatorFont"
+                  >Loading...</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+      <div id="footer_placeholder"></div>
+    </div>
 
-      <div id="mod-content">
-        <h1>Mod Panel</h1>
-        <div class="mod-status" id="mod-status"></div>
-
-        <!-- BAN USER -->
-        <div class="mod-section">
-          <h2>Ban User</h2>
-          <div class="mod-row">
-            <input class="mod-input" type="text" id="search-username" placeholder="Username...">
-            <button class="mod-btn btn-search" onclick="searchUser()">Search</button>
-          </div>
-          <div id="user-result"></div>
-        </div>
-
-        <!-- ROLE MANAGEMENT -->
-        <div class="mod-section">
-          <h2>Roles</h2>
-          <div class="mod-row">
-            <input class="mod-input" type="text" id="role-username" placeholder="Username...">
-            <select id="role-select" style="font:13pt ToonatorFont;padding:6px 10px;border:1px solid #ccc;border-radius:5px;">
-              <option value="user">user</option>
-              <option value="mod">mod</option>
-              <option value="admin">admin</option>
-            </select>
-            <button class="mod-btn btn-promote" onclick="setRole()">Set Role</button>
-          </div>
-          <div id="role-result"></div>
-        </div>
-
-        <!-- IP BANS -->
-        <div class="mod-section">
-          <h2>IP Bans</h2>
-          <div class="mod-row">
-            <input class="mod-input" type="text" id="ban-ip" placeholder="IP address...">
-            <input class="mod-input" type="text" id="ban-ip-reason" placeholder="Reason (optional)" style="width:220px;">
-            <button class="mod-btn btn-add-ip" onclick="addIpBan()">Add Ban</button>
-          </div>
-          <div id="ip-list"><span style="color:#888;font:12pt ToonatorFont;">Loading...</span></div>
-        </div>
-
+    <!-- Confirm dialog -->
+    <div id="confirmOverlay" onclick="cancelConfirm()"></div>
+    <div id="confirmBox">
+      <h2>Are you sure?</h2>
+      <p id="confirmMsg"></p>
+      <div class="actions">
+        <button class="mod-btn btn-remove" onclick="cancelConfirm()">
+          Cancel
+        </button>
+        <button class="mod-btn btn-ban" onclick="doConfirm()">Confirm</button>
       </div>
     </div>
-  </div>
-  <div id="footer_placeholder"></div>
-</div>
 
-<!-- Confirm dialog -->
-<div id="confirmOverlay" onclick="cancelConfirm()"></div>
-<div id="confirmBox">
-  <h2>Are you sure?</h2>
-  <p id="confirmMsg"></p>
-  <div class="actions">
-    <button class="mod-btn btn-remove" onclick="cancelConfirm()">Cancel</button>
-    <button class="mod-btn btn-ban" onclick="doConfirm()">Confirm</button>
-  </div>
-</div>
+    <script>
+      const SUPABASE_URL = "https://ytyhhmwnnlkhhpvsurlm.supabase.co";
+      const ANON_KEY =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0eWhobXdubmxraGhwdnN1cmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzcwNTAsImV4cCI6MjA4ODU1MzA1MH0.XZVH3j6xftSRULfhdttdq6JGIUSgHHJt9i-vXnALjH0";
 
-<script>
-  const SUPABASE_URL = 'https://ytyhhmwnnlkhhpvsurlm.supabase.co';
-  const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0eWhobXdubmxraGhwdnN1cmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzcwNTAsImV4cCI6MjA4ODU1MzA1MH0.XZVH3j6xftSRULfhdttdq6JGIUSgHHJt9i-vXnALjH0';
+      let currentUserRole = null;
+      let pendingAction = null;
 
-  let currentUserRole = null;
-  let pendingAction = null;
+      function escapeHTML(str) {
+        return String(str || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
 
-  function escapeHTML(str) {
-    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-  }
+      function showStatus(msg, ok = true) {
+        const el = document.getElementById("mod-status");
+        el.textContent = msg;
+        el.className = "mod-status " + (ok ? "ok" : "err");
+        setTimeout(() => {
+          el.className = "mod-status";
+        }, 4000);
+      }
 
-  function showStatus(msg, ok = true) {
-    const el = document.getElementById('mod-status');
-    el.textContent = msg;
-    el.className = 'mod-status ' + (ok ? 'ok' : 'err');
-    setTimeout(() => { el.className = 'mod-status'; }, 4000);
-  }
+      async function init() {
+        const {
+          data: { user },
+        } = await db.auth.getUser();
+        if (!user) {
+          document.getElementById("access-denied").style.display = "block";
+          return;
+        }
+        const { data: profile } = await db
+          .from("profiles")
+          .select("username, role")
+          .eq("id", user.id)
+          .single();
+        if (!profile || !["admin", "mod"].includes(profile.role)) {
+          document.getElementById("access-denied").style.display = "block";
+          return;
+        }
+        currentUserRole = profile.role;
+        document.getElementById("mod-content").style.display = "block";
+        loadIpBans();
+      }
 
-  async function init() {
-    const { data: { user } } = await db.auth.getUser();
-    if (!user) { document.getElementById('access-denied').style.display = 'block'; return; }
-    const { data: profile } = await db.from('profiles').select('username, role').eq('id', user.id).single();
-    if (!profile || !['admin', 'mod'].includes(profile.role)) {
-      document.getElementById('access-denied').style.display = 'block'; return;
-    }
-    currentUserRole = profile.role;
-    document.getElementById('mod-content').style.display = 'block';
-    loadIpBans();
-  }
-
-  async function searchUser() {
-    const username = document.getElementById('search-username').value.trim();
-    if (!username) return;
-    const { data, error } = await db.from('profiles').select('id, username, role').ilike('username', username).limit(5);
-    const el = document.getElementById('user-result');
-    if (error || !data || data.length === 0) {
-      el.innerHTML = '<div style="color:#888;font:12pt ToonatorFont;">No users found.</div>'; return;
-    }
-    el.innerHTML = data.map(u => `
+      async function searchUser() {
+        const username = document
+          .getElementById("search-username")
+          .value.trim();
+        if (!username) return;
+        const { data, error } = await db
+          .from("profiles")
+          .select("id, username, role")
+          .ilike("username", username)
+          .limit(5);
+        const el = document.getElementById("user-result");
+        if (error || !data || data.length === 0) {
+          el.innerHTML =
+            '<div style="color:#888;font:12pt ToonatorFont;">No users found.</div>';
+          return;
+        }
+        el.innerHTML = data
+          .map(
+            (u) => `
       <div class="user-card">
         <div class="uname ${escapeHTML(u.role)}">${escapeHTML(u.username)}</div>
         <div class="umeta">Role: ${escapeHTML(u.role)}</div>
         <div class="uactions">
           <button class="mod-btn btn-ban" onclick="confirmBan('${escapeHTML(u.id)}','${escapeHTML(u.username)}')">Ban &amp; Delete</button>
         </div>
-      </div>`).join('');
-  }
+      </div>`,
+          )
+          .join("");
+      }
 
-  async function setRole() {
-    const username = document.getElementById('role-username').value.trim();
-    const role = document.getElementById('role-select').value;
-    if (!username) return;
-    if (currentUserRole !== 'admin') { showStatus('Only admins can change roles.', false); return; }
-    const { data, error } = await db.from('profiles').update({ role }).ilike('username', username).select('username, role');
-    const el = document.getElementById('role-result');
-    if (error || !data || data.length === 0) {
-      el.innerHTML = '<div style="color:red;font:12pt ToonatorFont;">User not found or error.</div>'; return;
-    }
-    el.innerHTML = `<div style="color:green;font:12pt ToonatorFont;">Set <b>${escapeHTML(data[0].username)}</b> to <b>${escapeHTML(data[0].role)}</b>.</div>`;
-    showStatus(`Role updated for ${data[0].username}.`);
-  }
+      async function setRole() {
+        const username = document.getElementById("role-username").value.trim();
+        const role = document.getElementById("role-select").value;
+        if (!username) return;
+        if (currentUserRole !== "admin") {
+          showStatus("Only admins can change roles.", false);
+          return;
+        }
+        const { data, error } = await db
+          .from("profiles")
+          .update({ role })
+          .ilike("username", username)
+          .select("username, role");
+        const el = document.getElementById("role-result");
+        if (error || !data || data.length === 0) {
+          el.innerHTML =
+            '<div style="color:red;font:12pt ToonatorFont;">User not found or error.</div>';
+          return;
+        }
+        el.innerHTML = `<div style="color:green;font:12pt ToonatorFont;">Set <b>${escapeHTML(data[0].username)}</b> to <b>${escapeHTML(data[0].role)}</b>.</div>`;
+        showStatus(`Role updated for ${data[0].username}.`);
+      }
 
-  async function loadIpBans() {
-    const { data, error } = await db.from('banned_ips').select('ip, reason, banned_at').order('banned_at', { ascending: false });
-    const el = document.getElementById('ip-list');
-    if (error || !data || data.length === 0) {
-      el.innerHTML = '<div style="color:#888;font:12pt ToonatorFont;">No banned IPs.</div>'; return;
-    }
-    el.innerHTML = `<table class="ip-table">
+      async function loadIpBans() {
+        const { data, error } = await db
+          .from("banned_ips")
+          .select("ip, reason, banned_at")
+          .order("banned_at", { ascending: false });
+        const el = document.getElementById("ip-list");
+        if (error || !data || data.length === 0) {
+          el.innerHTML =
+            '<div style="color:#888;font:12pt ToonatorFont;">No banned IPs.</div>';
+          return;
+        }
+        el.innerHTML = `<table class="ip-table">
       <thead><tr><th>IP</th><th>Reason</th><th>Date</th><th></th></tr></thead>
-      <tbody>${data.map(row => `
+      <tbody>${data
+        .map(
+          (row) => `
         <tr>
           <td><code>${escapeHTML(row.ip)}</code></td>
-          <td>${escapeHTML(row.reason || '—')}</td>
-          <td>${row.banned_at ? new Date(row.banned_at).toLocaleDateString() : '—'}</td>
+          <td>${escapeHTML(row.reason || "—")}</td>
+          <td>${row.banned_at ? new Date(row.banned_at).toLocaleDateString() : "—"}</td>
           <td><button class="mod-btn btn-remove" onclick="removeIpBan('${escapeHTML(row.ip)}')">Remove</button></td>
-        </tr>`).join('')}
+        </tr>`,
+        )
+        .join("")}
       </tbody></table>`;
-  }
+      }
 
-  async function addIpBan() {
-    const ip = document.getElementById('ban-ip').value.trim();
-    const reason = document.getElementById('ban-ip-reason').value.trim();
-    if (!ip) return;
-    const { error } = await db.from('banned_ips').upsert({ ip, reason: reason || null });
-    if (error) { showStatus('Error: ' + error.message, false); return; }
-    document.getElementById('ban-ip').value = '';
-    document.getElementById('ban-ip-reason').value = '';
-    showStatus('IP banned: ' + ip);
-    loadIpBans();
-  }
+      async function addIpBan() {
+        const ip = document.getElementById("ban-ip").value.trim();
+        const reason = document.getElementById("ban-ip-reason").value.trim();
+        if (!ip) return;
+        const { error } = await db
+          .from("banned_ips")
+          .upsert({ ip, reason: reason || null });
+        if (error) {
+          showStatus("Error: " + error.message, false);
+          return;
+        }
+        document.getElementById("ban-ip").value = "";
+        document.getElementById("ban-ip-reason").value = "";
+        showStatus("IP banned: " + ip);
+        loadIpBans();
+      }
 
-  async function removeIpBan(ip) {
-    const { error } = await db.from('banned_ips').delete().eq('ip', ip);
-    if (error) { showStatus('Error: ' + error.message, false); return; }
-    showStatus('IP removed: ' + ip);
-    loadIpBans();
-  }
+      async function removeIpBan(ip) {
+        const { error } = await db.from("banned_ips").delete().eq("ip", ip);
+        if (error) {
+          showStatus("Error: " + error.message, false);
+          return;
+        }
+        showStatus("IP removed: " + ip);
+        loadIpBans();
+      }
 
-  function confirmBan(userId, username) {
-    pendingAction = { type: 'ban', userId, username };
-    document.getElementById('confirmMsg').textContent =
-      `This will permanently delete ${username}'s account, all their toons, comments, and likes. This cannot be undone.`;
-    document.getElementById('confirmOverlay').style.display = 'block';
-    document.getElementById('confirmBox').style.display = 'block';
-  }
+      function confirmBan(userId, username) {
+        pendingAction = { type: "ban", userId, username };
+        document.getElementById("confirmMsg").textContent =
+          `This will permanently delete ${username}'s account, all their toons, comments, and likes. This cannot be undone.`;
+        document.getElementById("confirmOverlay").style.display = "block";
+        document.getElementById("confirmBox").style.display = "block";
+      }
 
-  function cancelConfirm() {
-    pendingAction = null;
-    document.getElementById('confirmOverlay').style.display = 'none';
-    document.getElementById('confirmBox').style.display = 'none';
-  }
+      function cancelConfirm() {
+        pendingAction = null;
+        document.getElementById("confirmOverlay").style.display = "none";
+        document.getElementById("confirmBox").style.display = "none";
+      }
 
-  async function doConfirm() {
-    if (!pendingAction) return;
-    const { userId, username } = pendingAction;
-    cancelConfirm();
-    const { error } = await db.rpc('ban_user', { target_user_id: userId, ban_reason: 'Banned via mod panel' });
-    if (error) { showStatus('Error banning user: ' + error.message, false); return; }
-    showStatus(`${username} has been banned and deleted.`);
-    document.getElementById('user-result').innerHTML = '';
-    document.getElementById('search-username').value = '';
-  }
+      async function doConfirm() {
+        if (!pendingAction) return;
+        const { userId, username } = pendingAction;
+        cancelConfirm();
+        const { error } = await db.rpc("ban_user", {
+          target_user_id: userId,
+          ban_reason: "Banned via mod panel",
+        });
+        if (error) {
+          showStatus("Error banning user: " + error.message, false);
+          return;
+        }
+        showStatus(`${username} has been banned and deleted.`);
+        document.getElementById("user-result").innerHTML = "";
+        document.getElementById("search-username").value = "";
+      }
 
-  async function loadIncludes() {
-    const header = await fetch('/includes/header.html').then(r => r.text());
-    const footer = await fetch('/includes/footer.html').then(r => r.text());
-    const modal  = await fetch('/includes/auth-modal.html').then(r => r.text());
-    document.getElementById('header_placeholder').innerHTML = header;
-    document.getElementById('footer_placeholder').innerHTML = footer;
-    document.body.insertAdjacentHTML('beforeend', modal);
-    updateAuthUI();
-  }
+      async function loadIncludes() {
+        const header = await fetch("/includes/header.html").then((r) =>
+          r.text(),
+        );
+        const footer = await fetch("/includes/footer.html").then((r) =>
+          r.text(),
+        );
+        const modal = await fetch("/includes/auth-modal.html").then((r) =>
+          r.text(),
+        );
+        document.getElementById("header_placeholder").innerHTML = header;
+        document.getElementById("footer_placeholder").innerHTML = footer;
+        document.body.insertAdjacentHTML("beforeend", modal);
+        updateAuthUI();
+      }
 
-  loadIncludes();
-  init();
-</script>
-</body>
+      loadIncludes();
+      init();
+    </script>
+  </body>
 </html>
