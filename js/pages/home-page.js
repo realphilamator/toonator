@@ -1,6 +1,7 @@
 // Home Page Controller - Load and display popular/newest toons
 
 import { supabaseRequest, rpc, escapeHTML } from "/js/api.js";
+import { loadIncludes } from "/js/utils/includes.js";
 
 const SUPABASE_URL = "https://ytyhhmwnnlkhhpvsurlm.supabase.co";
 
@@ -54,18 +55,6 @@ async function resolveUsernames(toons) {
     }),
   );
   return userMap;
-}
-
-async function loadIncludes() {
-  const header = await fetch("/includes/header.html").then((r) => r.text());
-  const footer = await fetch("/includes/footer.html").then((r) => r.text());
-  const donate = await fetch("/includes/donate.html").then((r) => r.text());
-  const modal = await fetch("/includes/auth-modal.html").then((r) => r.text());
-  document.getElementById("donate_placeholder").innerHTML = donate;
-  document.getElementById("header_placeholder").innerHTML = header;
-  document.getElementById("footer_placeholder").innerHTML = footer;
-  document.body.insertAdjacentHTML("beforeend", modal);
-  updateAuthUI();
 }
 
 async function loadPopular() {

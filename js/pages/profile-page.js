@@ -5,9 +5,9 @@ import {
   getUserToons,
   getUserFavorites,
   getUserCommentedToons,
-  loadIncludes,
   updateUserAvatar,
 } from "/js/api.js";
+import { loadIncludes } from "/js/utils/includes.js";
 import {
   renderPaginator,
   calculateTotalPages,
@@ -25,12 +25,7 @@ export async function initProfile(username) {
   currentPage = getCurrentPageFromURL();
 
   // Load includes (header, footer, modal)
-  const { header, footer, donate, modal } = await loadIncludes();
-  if (header) document.getElementById("header_placeholder").innerHTML = header;
-  if (footer) document.getElementById("footer_placeholder").innerHTML = footer;
-  if (donate) document.getElementById("donate_placeholder").innerHTML = donate;
-  if (modal) document.body.insertAdjacentHTML("beforeend", modal);
-  if (window.updateAuthUI) updateAuthUI();
+  await loadIncludes();
 
   // Load profile data
   const { profile } = await getProfileByUsername(username);

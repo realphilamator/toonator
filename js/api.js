@@ -460,15 +460,3 @@ export async function postMessage(recipientUsername, text) {
 
   return { data, error, success: !error };
 }
-
-// Load includes HTML
-export async function loadIncludes() {
-  const [header, footer, donate, modal] = await Promise.all([
-    fetch("/includes/header.html").then((r) => r.text()),
-    fetch("/includes/footer.html").then((r) => r.text()),
-    fetch("/includes/donate.html").then((r) => r.text()),
-    fetch("/includes/auth-modal.html").then((r) => r.text()),
-  ]).catch(() => ["", "", "", ""]);
-
-  return { header, footer, donate, modal };
-}

@@ -1,59 +1,86 @@
-let authMode = 'login';
+// ============================================================
+// Auth State & Config
+// ============================================================
+
+let authMode = "login";
 
 // ============================================================
 // XSS FIX: escape all user-supplied strings before inserting
 // into innerHTML. Used in updateAuthUI() for username.
 // ============================================================
 function escapeHTML(str) {
-  const d = document.createElement('div');
-  d.textContent = str ?? '';
+  const d = document.createElement("div");
+  d.textContent = str ?? "";
   return d.innerHTML;
 }
 
 async function updateAuthUI() {
-  const { data: { user } } = await db.auth.getUser();
-  const menu = document.getElementById('newmenu');
-  if (!menu) return;
+  const {
+    data: { user },
+  } = await db.auth.getUser();
+
+  const guestItems = document.querySelectorAll("#guest_join, #guest_login");
+  const authItems = document.querySelectorAll(".auth_only");
 
   if (user) {
-    // FIX: escape username before injecting into innerHTML —
-    // a malicious username like <script>... would execute on every page otherwise.
-    const rawUsername = user.user_metadata?.username || user.email;
-    const username = escapeHTML(rawUsername);
+    const username = user.user_metadata?.username || user.email;
+    const escaped = escapeHTML(username);
 
-    menu.innerHTML = `
-      <li id="mnumessages">
-        <a href="/messages/"><span class="counter"></span></a>
-      </li>
-      <li id="notify">
-        <a href="/notifications/"><span class="counter"></span></a>
-      </li>
-      <li id="spiders">
-        <a href="/user/${username}/fans/"><span class="counter"></span></a>
-      </li>
-      <li id="account">
-        <a href="/user/${username}">${username}</a>
-        <ul>
-          <li><a href="/user/${username}">My toons</a></li>
-          <li><a href="/settings/">Settings</a></li>
-          <li><a href="#" onclick="signOut(); return false;">Sign Out</a></li>
-        </ul>
-      </li>
-    `;
+    // Show auth menu, hide guest menu
+    guestItems.forEach((item) => (item.style.display = "none"));
+    authItems.forEach((item) => (item.style.display = ""));
 
-    const accountLi = document.getElementById('account');
-    accountLi.addEventListener('mouseenter', () => {
-      accountLi.querySelector('ul').style.display = 'block';
-    });
-    accountLi.addEventListener('mouseleave', () => {
-      accountLi.querySelector('ul').style.display = 'none';
-    });
+    // Update links
+    const profileLink = document.querySelector(".profile_link");
+    const fansLink = document.querySelector(".fans_link");
+    const myToonsLink = document.querySelector(".my_toons_link");
 
+    const profileUrl = `/pages/profile.html?username=${escaped}`;
+    profileLink.href = profileUrl;
+    profileLink.textContent = escaped;
+    fansLink.href = `/user/${escaped}/fans/`;
+    myToonsLink.href = profileUrl;
   } else {
-    menu.innerHTML = `
-      <li><a href="#" onclick="showAuth('join'); return false;">Join</a></li>
-      <li><a href="#" onclick="showAuth('login'); return false;">Sign In</a></li>
-    `;
+    // Show guest menu, hide auth menu
+    guestItems.forEach((item) => (item.style.display = ""));
+    authItems.forEach((item) => (item.style.display = "none"));
+  }
+
+  setupHeaderEvents();
+}
+
+function setupHeaderEvents() {
+  // Join button
+  document.getElementById("join_btn")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    showAuth("join");
+  });
+
+  // Login button
+  document.getElementById("login_btn")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    showAuth("login");
+  });
+
+  // Logout button
+  document.getElementById("logout_btn")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    signOut();
+  });
+
+  // Account dropdown
+  const accountLi = document.getElementById("account");
+
+  if (accountLi) {
+    accountLi.addEventListener("mouseenter", () => {
+      const menu = accountLi.querySelector("ul");
+      if (menu) menu.style.display = "block";
+    });
+
+    accountLi.addEventListener("mouseleave", () => {
+      const menu = accountLi.querySelector("ul");
+      if (menu) menu.style.display = "none";
+    });
   }
 }
 
@@ -65,34 +92,34 @@ async function signOut() {
 function showAuth(mode) {
   authMode = mode;
 
-  if (mode === 'join') {
-    window.location.href = '/register/';
+  if (mode === "join") {
+    window.location.href = "/register/";
     return;
   }
 
-  const modal = document.getElementById('authModal');
-  modal.style.display = 'block';
-  document.getElementById('authError').innerText = '';
-  document.getElementById('authEmail').value = '';
-  document.getElementById('authPassword').value = '';
+  const modal = document.getElementById("authModal");
+  modal.style.display = "block";
+  document.getElementById("authError").innerText = "";
+  document.getElementById("authEmail").value = "";
+  document.getElementById("authPassword").value = "";
 }
 
 function closeAuth() {
-  document.getElementById('authModal').style.display = 'none';
+  document.getElementById("authModal").style.display = "none";
 }
 
 async function submitAuth() {
-  const email = document.getElementById('authEmail').value.trim();
-  const password = document.getElementById('authPassword').value;
-  const errorEl = document.getElementById('authError');
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+  const errorEl = document.getElementById("authError");
 
   if (!email || !password) {
-    errorEl.textContent = 'Please enter your email and password.';
+    errorEl.textContent = "Please enter your email and password.";
     return;
   }
 
   let result;
-  if (authMode === 'join') {
+  if (authMode === "join") {
     result = await db.auth.signUp({ email, password });
   } else {
     result = await db.auth.signInWithPassword({ email, password });
@@ -108,6 +135,23 @@ async function submitAuth() {
 }
 
 function toggleOldSignin() {
-  const el = document.getElementById('signin-old');
-  if (el) el.classList.toggle('hidden');
+  const el = document.getElementById("signin-old");
+  if (el) el.classList.toggle("hidden");
 }
+
+// ============================================================
+// Auto-initialize auth UI on all pages
+// ============================================================
+
+async function waitForDb(maxWait = 5000) {
+  const start = Date.now();
+  while (!window.db && Date.now() - start < maxWait) {
+    await new Promise((r) => setTimeout(r, 10));
+  }
+  return window.db;
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await waitForDb();
+  updateAuthUI();
+});

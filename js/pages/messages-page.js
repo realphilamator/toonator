@@ -1,10 +1,6 @@
 // Messages Page Controller
-import {
-  loadIncludes,
-  getMessages,
-  postMessage,
-  getProfileByUsername,
-} from "/js/api.js";
+import { getMessages, postMessage, getProfileByUsername } from "/js/api.js";
+import { loadIncludes } from "/js/utils/includes.js";
 import { db } from "/js/config.js";
 
 let currentRecipient = null;
@@ -12,12 +8,7 @@ let currentUser = null;
 
 export async function initMessages(recipientUsername) {
   // Load includes
-  const { header, footer, donate, modal } = await loadIncludes();
-  if (header) document.getElementById("header_placeholder").innerHTML = header;
-  if (footer) document.getElementById("footer_placeholder").innerHTML = footer;
-  if (donate) document.getElementById("donate_placeholder").innerHTML = donate;
-  if (modal) document.body.insertAdjacentHTML("beforeend", modal);
-  if (window.updateAuthUI) updateAuthUI();
+  await loadIncludes();
 
   // Get current user
   const {
