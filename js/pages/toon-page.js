@@ -7,9 +7,17 @@ import {
   formatDate,
 } from "/js/api.js";
 import { loadIncludes } from "/js/utils/includes.js";
-import { initializeLikes, handleLike, handleFavorite } from "/js/components/likes.js";
-import { loadComments, showCommentForm, postCommentHandler } from "/js/components/comments.js";
-import { colorUsernames } from "/js/color-username.js";
+import {
+  initializeLikes,
+  handleLike,
+  handleFavorite,
+} from "/js/components/likes.js";
+import {
+  loadComments,
+  showCommentForm,
+  postCommentHandler,
+} from "/js/components/comments.js";
+import "/js/color-username.js";
 
 const SUPABASE_URL = "https://ytyhhmwnnlkhhpvsurlm.supabase.co";
 
@@ -114,8 +122,10 @@ function setupEventHandlers(toonId) {
   if (postBtn) postBtn.onclick = (e) => { e.preventDefault(); postCommentHandler(toonId); };
 
   const cancelBtn = document.querySelector("button:last-of-type");
-  if (cancelBtn) cancelBtn.onclick = (e) => {
-    e.preventDefault();
-    document.getElementById("comments_form").style.display = "none";
-  };
+  if (cancelBtn) {
+    cancelBtn.onclick = (e) => {
+      e.preventDefault();
+      document.getElementById("comments_form").style.display = "none";
+    };
+  }
 }
