@@ -78,7 +78,7 @@ function toonCardHTML(toon, username) {
       ${medal}
       <div class="toon_image">
         <a href=\"/toon/${toonId}\" title=\"${title}\">
-          <img alt=\"${title}\" title=\"${title}\" src=\"${previewUrl(toonId)}\">
+          <img alt=\"${title}\" title=\"${title}\" src=\"${previewUrl(toonId)}\" onerror=\"this.onerror=null;this.src='/img/avatar100.gif'\">
         </a>
       </div>
       <div class=\"toon_name\"><a class=\"link\" href=\"/toon/${toonId}\">${title}</a></div>
@@ -207,7 +207,7 @@ async function loadLastComments() {
   <div class="comment ${i % 2 !== 0 ? "gray" : ""} last_comments">
     <div class="avatar">
       <a href=\"/toon/${animId}\">
-        <img src=\"${SUPABASE_URL}/storage/v1/object/public/previews/${animId}_100.gif\" width=\"80\"/>
+        <img src=\"${SUPABASE_URL}/storage/v1/object/public/previews/${animId}_100.gif\" width=\"80\" onerror=\"this.onerror=null;this.src='/img/avatar100.gif'\"/>
       </a>
     </div>
     <div class=\"head\">

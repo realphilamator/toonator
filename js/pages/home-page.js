@@ -30,7 +30,7 @@ function toonCardHTML(toon, username) {
       <div class="toon_preview owned">
         <div class="toon_image">
           <a href="${toonUrl}" title="${title}">
-            <img alt="${title}" title="${title}" src="${previewUrl(toon.id)}">
+            <img alt="${title}" title="${title}" src="${previewUrl(toon.id)}" onerror="this.onerror=null;this.src='/img/avatar100.gif'">
           </a>
         </div>
         <div class="toon_name"><a class="link" href="${toonUrl}">${title}</a></div>
