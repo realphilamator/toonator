@@ -36,10 +36,12 @@ async function updateAuthUI() {
     const myToonsLink = document.querySelector(".my_toons_link");
 
     const profileUrl = `/user/${escaped}`;
-    profileLink.href = profileUrl;
-    profileLink.textContent = escaped;
-    fansLink.href = `/user/${escaped}/fans/`;
-    myToonsLink.href = profileUrl;
+    if (profileLink) {
+      profileLink.href = profileUrl;
+      profileLink.textContent = escaped;
+    }
+    if (fansLink) fansLink.href = `/user/${escaped}/fans/`;
+    if (myToonsLink) myToonsLink.href = profileUrl;
   } else {
     // Show guest menu, hide auth menu
     guestItems.forEach((item) => (item.style.display = ""));
