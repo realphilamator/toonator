@@ -24,37 +24,26 @@ let currentUserRole = null;
 async function promptLogin() {
   const email = prompt("Admin email:");
   if (!email) return;
-
   const password = prompt("Password:");
   if (!password) return;
-
-  const { error } = await db.auth.signInWithPassword({
-    email,
-    password
-  });
-
-  if (error) {
-    alert("Login failed: " + error.message);
-    return;
-  }
-
+  const { error } = await db.auth.signInWithPassword({ email, password });
+  if (error) { alert("Login failed: " + error.message); return; }
   location.reload();
 }
 
-async function logout(){
+async function logout() {
   await db.auth.signOut();
   location.reload();
 }
 
-async function init(){
+async function init() {
+  const { data: { user } } = await db.auth.getUser();
 
-  const { data:{ user } } = await db.auth.getUser();
-
-  if(!user){
+  if (!user) {
     const denied = document.getElementById("access-denied");
     denied.innerHTML = `
       Moderator login required.<br><br>
-      <button class="mod-btn btn-search" onclick="promptLogin()">Sign In</button>
+      <button onclick="promptLogin()">Sign In</button>
     `;
     denied.style.display = "block";
     return;
@@ -68,234 +57,398 @@ async function init(){
 
   currentUserRole = profile?.role || "user";
 
-  if(currentUserRole !== "mod" && currentUserRole !== "admin"){
-    document.getElementById("access-denied").style.display="block";
+  if (currentUserRole !== "mod" && currentUserRole !== "admin") {
+    document.getElementById("access-denied").style.display = "block";
     return;
   }
 
-  document.getElementById("mod-content").style.display="block";
-
+  document.getElementById("mod-content").style.display = "block";
   loadIpBans();
 }
 
-function escapeHTML(str){
-return String(str||"")
-.replace(/&/g,"&amp;")
-.replace(/</g,"&lt;")
-.replace(/>/g,"&gt;")
-.replace(/"/g,"&quot;")
-.replace(/'/g,"&#039;")
+function escapeHTML(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
-function showStatus(msg,ok=true){
-const el=document.getElementById("mod-status")
-el.textContent=msg
-el.className="mod-status "+(ok?"ok":"err")
-setTimeout(()=>{el.className="mod-status"},4000)
+function showStatus(msg, ok = true) {
+  const el = document.getElementById("mod-status");
+  el.textContent = msg;
+  el.className = "mod-status " + (ok ? "ok" : "err");
+  setTimeout(() => { el.textContent = ""; el.className = "mod-status"; }, 4000);
 }
 
-async function searchUser(){
+/* ── USER SEARCH ── */
+async function searchUser() {
+  const username = document.getElementById("search-username").value.trim();
+  if (!username) return;
 
-const username=document.getElementById("search-username").value.trim()
+  const { data } = await db
+    .from("profiles")
+    .select("id,username,role")
+    .ilike("username", username)
+    .limit(5);
 
-if(!username)return
+  const el = document.getElementById("user-result");
 
-const {data}=await db
-.from("profiles")
-.select("id,username,role")
-.ilike("username",username)
-.limit(5)
+  if (!data || data.length === 0) {
+    el.innerHTML = '<div class="mp-empty">No users found.</div>';
+    return;
+  }
 
-const el=document.getElementById("user-result")
-
-if(!data||data.length===0){
-el.innerHTML='<div style="color:#888;font:12pt ToonatorFont;">No users found.</div>'
-return
+  el.innerHTML = data.map(u => `
+    <div class="mp-user-row">
+      <span class="username ${escapeHTML(u.role)}">${escapeHTML(u.username)}</span>
+      <span class="grayb">(${escapeHTML(u.role)})</span>
+      <span class="mp-actions">
+        <button onclick="loadUserToons('${escapeHTML(u.id)}','${escapeHTML(u.username)}')">View Toons</button>
+        <button onclick="confirmBan('${escapeHTML(u.id)}','${escapeHTML(u.username)}')">Ban &amp; Delete</button>
+      </span>
+    </div>
+  `).join("");
 }
 
-el.innerHTML=data.map(u=>`
-<div class="user-card">
-<div class="uname ${escapeHTML(u.role)}">${escapeHTML(u.username)}</div>
-<div class="umeta">Role: ${escapeHTML(u.role)}</div>
-<div class="uactions">
-<button class="mod-btn btn-ban" onclick="confirmBan('${escapeHTML(u.id)}','${escapeHTML(u.username)}')">
-Ban & Delete
-</button>
-</div>
-</div>
-`).join("")
+/* ── TOON DELETION ── */
+async function loadUserToons(userId, username) {
+  const section = document.getElementById("toon-section");
+  const list = document.getElementById("toon-list");
+  document.getElementById("toon-section-title").textContent = username + "'s toons";
+  section.style.display = "block";
+  list.innerHTML = "Loading...";
+  section.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  // ⚠️ Update table/column names to match your schema
+  const { data, error } = await db
+    .from("toons")
+    .select("id,title,created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (error) {
+    list.innerHTML = `<div class="mp-empty red">${escapeHTML(error.message)}</div>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    list.innerHTML = '<div class="mp-empty">This user has no toons.</div>';
+    return;
+  }
+
+  renderToonList(data);
 }
 
-async function setRole(){
+async function searchToonById() {
+  const id = document.getElementById("toon-id-input").value.trim();
+  if (!id) return;
 
-const username=document.getElementById("role-username").value.trim()
-const role=document.getElementById("role-select").value
+  const section = document.getElementById("toon-section");
+  const list = document.getElementById("toon-list");
+  document.getElementById("toon-section-title").textContent = "Toon search";
+  section.style.display = "block";
+  list.innerHTML = "Searching...";
+  section.scrollIntoView({ behavior: "smooth", block: "start" });
 
-if(!username)return
+  const { data, error } = await db
+    .from("toons")
+    .select("id,title,created_at,user_id")
+    .eq("id", id)
+    .limit(1);
 
-if(currentUserRole!=="admin"){
-showStatus("Only admins can change roles.",false)
-return
+  if (error || !data || data.length === 0) {
+    list.innerHTML = '<div class="mp-empty">Toon not found.</div>';
+    return;
+  }
+
+  renderToonList(data);
 }
 
-const {data}=await db
-.from("profiles")
-.update({role})
-.ilike("username",username)
-.select("username,role")
-
-if(!data||data.length===0){
-showStatus("User not found.",false)
-return
+function renderToonList(toons) {
+  const list = document.getElementById("toon-list");
+  list.innerHTML = toons.map(t => `
+    <div class="mp-toon-row" id="toon-${escapeHTML(String(t.id))}">
+      <span class="mp-toon-title">${escapeHTML(t.title || "Untitled")}</span>
+      <span class="grayb small">${t.created_at ? new Date(t.created_at).toLocaleDateString() : "—"}</span>
+      <span class="grayb small">id: ${escapeHTML(String(t.id))}</span>
+      <button onclick="deleteToon('${escapeHTML(String(t.id))}')">Delete</button>
+    </div>
+  `).join("");
 }
 
-showStatus(`Role updated for ${data[0].username}`)
+async function deleteToon(toonId) {
+  if (!confirm("Delete toon " + toonId + "? This cannot be undone.")) return;
+
+  // ⚠️ Update table name if different
+  const { error } = await db.from("toons").delete().eq("id", toonId);
+
+  if (error) { showStatus("Error: " + error.message, false); return; }
+
+  const card = document.getElementById("toon-" + toonId);
+  if (card) card.remove();
+  showStatus("Toon deleted.");
 }
 
-async function loadIpBans(){
+/* ── ROLES ── */
+async function setRole() {
+  const username = document.getElementById("role-username").value.trim();
+  const role = document.getElementById("role-select").value;
+  if (!username) return;
 
-const {data}=await db
-.from("banned_ips")
-.select("ip,reason,banned_at")
-.order("banned_at",{ascending:false})
+  if (currentUserRole !== "admin") {
+    showStatus("Only admins can change roles.", false);
+    return;
+  }
 
-const el=document.getElementById("ip-list")
+  const { data } = await db
+    .from("profiles")
+    .update({ role })
+    .ilike("username", username)
+    .select("username,role");
 
-if(!data||data.length===0){
-el.innerHTML="No banned IPs."
-return
+  if (!data || data.length === 0) { showStatus("User not found.", false); return; }
+  showStatus("Role updated: " + data[0].username + " is now " + data[0].role);
 }
 
-el.innerHTML=`<table class="ip-table">
-<thead>
-<tr>
-<th>IP</th>
-<th>Reason</th>
-<th>Date</th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-${data.map(row=>`
-<tr>
-<td><code>${escapeHTML(row.ip)}</code></td>
-<td>${escapeHTML(row.reason||"—")}</td>
-<td>${row.banned_at?new Date(row.banned_at).toLocaleDateString():"—"}</td>
-<td>
-<button class="mod-btn btn-remove" onclick="removeIpBan('${escapeHTML(row.ip)}')">
-Remove
-</button>
-</td>
-</tr>
-`).join("")}
-</tbody>
-</table>`
+/* ── IP BANS ── */
+async function loadIpBans() {
+  const { data } = await db
+    .from("banned_ips")
+    .select("ip,reason,banned_at")
+    .order("banned_at", { ascending: false });
+
+  const el = document.getElementById("ip-list");
+
+  if (!data || data.length === 0) {
+    el.innerHTML = '<div class="mp-empty">No banned IPs.</div>';
+    return;
+  }
+
+  el.innerHTML = `
+    <table class="mp-table">
+      <thead>
+        <tr><th>IP</th><th>Reason</th><th>Date</th><th></th></tr>
+      </thead>
+      <tbody>
+        ${data.map(row => `
+          <tr>
+            <td><code>${escapeHTML(row.ip)}</code></td>
+            <td>${escapeHTML(row.reason || "—")}</td>
+            <td>${row.banned_at ? new Date(row.banned_at).toLocaleDateString() : "—"}</td>
+            <td><button onclick="removeIpBan('${escapeHTML(row.ip)}')">Remove</button></td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>`;
 }
 
-async function addIpBan(){
-
-const ip=document.getElementById("ban-ip").value.trim()
-const reason=document.getElementById("ban-ip-reason").value.trim()
-
-if(!ip)return
-
-await db.from("banned_ips").insert({ip,reason})
-
-showStatus("IP banned")
-
-loadIpBans()
+async function addIpBan() {
+  const ip = document.getElementById("ban-ip").value.trim();
+  const reason = document.getElementById("ban-ip-reason").value.trim();
+  if (!ip) return;
+  await db.from("banned_ips").insert({ ip, reason });
+  document.getElementById("ban-ip").value = "";
+  document.getElementById("ban-ip-reason").value = "";
+  showStatus("IP banned: " + ip);
+  loadIpBans();
 }
 
-async function removeIpBan(ip){
-
-await db.from("banned_ips").delete().eq("ip",ip)
-
-showStatus("IP ban removed")
-
-loadIpBans()
+async function removeIpBan(ip) {
+  await db.from("banned_ips").delete().eq("ip", ip);
+  showStatus("IP ban removed: " + ip);
+  loadIpBans();
 }
 
-window.onload = init
+window.onload = init;
 </script>
 
 <style>
-#access-denied{
-display:none;
-text-align:center;
-padding:60px 20px;
-font:20pt ToonatorFont;
-color:#888
+#access-denied {
+  display: none;
+  text-align: center;
+  padding: 60px 20px;
+  font: 16pt ToonatorFont;
+  color: #888;
 }
 
-#mod-content{
-display:none
+#mod-content {
+  display: none;
+  padding: 10px 0;
 }
+
+.mp-section {
+  margin: 14px 0;
+  padding: 12px;
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+}
+
+.mp-section h2 {
+  font: 14pt ToonatorFont;
+  font-weight: normal;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #eeeeee;
+  padding-bottom: 4px;
+  text-align: left;
+}
+
+.mod-status {
+  font: 10pt Arial;
+  min-height: 18px;
+  margin: 6px 0;
+}
+.mod-status.ok  { color: green; }
+.mod-status.err { color: red; }
+
+.mp-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.mp-row input[type="text"],
+.mp-row select {
+  font: 10pt Arial;
+  border: 1px solid #cccccc;
+  border-radius: 3px;
+  padding: 3px 6px;
+  height: 28px;
+}
+
+#user-result { margin-top: 8px; }
+
+.mp-user-row {
+  padding: 5px 4px;
+  border-bottom: 1px solid #eeeeee;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 11pt ToonatorFont;
+}
+.mp-user-row:last-child { border-bottom: none; }
+.mp-actions { margin-left: auto; display: flex; gap: 4px; }
+
+#toon-section { display: none; }
+#toon-list { margin-top: 8px; }
+
+.mp-toon-row {
+  padding: 5px 4px;
+  border-bottom: 1px solid #eeeeee;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 10pt Arial;
+}
+.mp-toon-row:last-child { border-bottom: none; }
+.mp-toon-row button { margin-left: auto; }
+.mp-toon-title { font-weight: bold; color: #333; }
+
+.mp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 10pt Arial;
+  margin-top: 8px;
+}
+.mp-table th {
+  text-align: left;
+  padding: 4px 8px;
+  border-bottom: 1px solid #cccccc;
+  color: #555;
+  font-size: 9pt;
+}
+.mp-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #eeeeee;
+  vertical-align: middle;
+}
+.mp-table tr:last-child td { border-bottom: none; }
+.mp-table tr:hover td { background: #fafafa; }
+.mp-table code {
+  font-size: 9pt;
+  background: #f4f4f4;
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid #e0e0e0;
+}
+
+.mp-empty { color: #888; font: 10pt Arial; padding: 8px 0; }
 </style>
 </head>
 
 <body>
-
 <div id="content_wrap">
 <div id="content">
 
-<div id="access-denied">
-You don't have permission to view this page.
+  <div id="access-denied">
+    You don't have permission to view this page.
+  </div>
+
+  <div id="mod-content">
+
+    <h1>Mod Panel</h1>
+
+    <div style="text-align:right; margin: 6px 0;">
+      <button onclick="logout()">Log Out</button>
+    </div>
+
+    <div class="mod-status" id="mod-status"></div>
+
+    <!-- Search User -->
+    <div class="mp-section">
+      <h2>Search User</h2>
+      <div class="mp-row">
+        <input type="text" id="search-username" placeholder="Username..."
+          onkeydown="if(event.key==='Enter') searchUser()">
+        <button onclick="searchUser()">Search</button>
+      </div>
+      <div id="user-result"></div>
+    </div>
+
+    <!-- Toon Management -->
+    <div class="mp-section" id="toon-section">
+      <h2 id="toon-section-title">Toons</h2>
+      <div class="mp-row">
+        <input type="text" id="toon-id-input" placeholder="Find toon by ID..."
+          onkeydown="if(event.key==='Enter') searchToonById()">
+        <button onclick="searchToonById()">Find</button>
+      </div>
+      <div id="toon-list"></div>
+    </div>
+
+    <!-- Roles -->
+    <div class="mp-section">
+      <h2>Roles</h2>
+      <div class="mp-row">
+        <input type="text" id="role-username" placeholder="Username..."
+          onkeydown="if(event.key==='Enter') setRole()">
+        <select id="role-select">
+          <option value="user">user</option>
+          <option value="mod">mod</option>
+          <option value="admin">admin</option>
+        </select>
+        <button onclick="setRole()">Set Role</button>
+      </div>
+    </div>
+
+    <!-- IP Bans -->
+    <div class="mp-section">
+      <h2>IP Bans</h2>
+      <div class="mp-row">
+        <input type="text" id="ban-ip" placeholder="IP address..."
+          onkeydown="if(event.key==='Enter') addIpBan()">
+        <input type="text" id="ban-ip-reason" placeholder="Reason (optional)">
+        <button onclick="addIpBan()">Add Ban</button>
+      </div>
+      <div id="ip-list">Loading...</div>
+    </div>
+
+  </div>
+
 </div>
-
-<div id="mod-content">
-
-<h1>Mod Panel</h1>
-
-<button class="mod-btn btn-remove" onclick="logout()">Log Out</button>
-
-<div class="mod-status" id="mod-status"></div>
-
-<div class="mod-section">
-<h2>Ban User</h2>
-
-<div class="mod-row">
-<input class="mod-input" type="text" id="search-username" placeholder="Username...">
-<button class="mod-btn btn-search" onclick="searchUser()">Search</button>
 </div>
-
-<div id="user-result"></div>
-</div>
-
-<div class="mod-section">
-<h2>Roles</h2>
-
-<div class="mod-row">
-<input class="mod-input" type="text" id="role-username" placeholder="Username...">
-
-<select id="role-select">
-<option value="user">user</option>
-<option value="mod">mod</option>
-<option value="admin">admin</option>
-</select>
-
-<button class="mod-btn btn-promote" onclick="setRole()">Set Role</button>
-</div>
-
-<div id="role-result"></div>
-</div>
-
-<div class="mod-section">
-<h2>IP Bans</h2>
-
-<div class="mod-row">
-<input class="mod-input" type="text" id="ban-ip" placeholder="IP address...">
-<input class="mod-input" type="text" id="ban-ip-reason" placeholder="Reason (optional)">
-<button class="mod-btn btn-add-ip" onclick="addIpBan()">Add Ban</button>
-</div>
-
-<div id="ip-list">Loading...</div>
-
-</div>
-
-</div>
-</div>
-</div>
-
 </body>
 </html>
-```
