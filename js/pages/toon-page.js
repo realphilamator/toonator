@@ -59,7 +59,7 @@ export async function initToon(toonId) {
   const authorLink = document.getElementById("author_link");
   authorLink.href = `/user/${encodeURIComponent(authorUsername)}`;
   authorLink.textContent = authorUsername;
-  authorLink.className = `username foreign ${authorData.russian ? "russian" : ""}`;
+  authorLink.className = `username ${authorData.russian ? "russian" : ""}`;
 
   const avatarEl = document.getElementById("author_avatar");
   avatarEl.src = authorData.avatar;
@@ -72,7 +72,7 @@ export async function initToon(toonId) {
         <div style="font-size:9pt; margin-top:5px;">
           Original: <a href="/toon/${contInfo.id}" class="noh" title="${contInfo.title} (${contInfo.author})">
             &#x25ce; ${escapeHTML(contInfo.title)}
-          </a> by <a href="/user/${encodeURIComponent(contInfo.author)}" class="username foreign${contInfo.authorRussian ? " russian" : ""}">${escapeHTML(contInfo.author)}</a>
+          </a> by <a href="/user/${encodeURIComponent(contInfo.author)}" class="username${contInfo.authorRussian ? " russian" : ""}">${escapeHTML(contInfo.author)}</a>
         </div>
       `;
     }

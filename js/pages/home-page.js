@@ -36,7 +36,7 @@ function toonCardHTML(toon, username) {
         </div>
         <div class="toon_name"><a class="link" href="${toonUrl}">${title}</a></div>
         <div class="toon_tagline">
-          <a href="${profileUrl}" class="username foreign">${escapeHTML(username)}</a>,
+          <a href="${profileUrl}" class="username">${escapeHTML(username)}</a>,
           ${frameStr}
         </div>
         <div class="toon_tagline">${commentStr}</div>

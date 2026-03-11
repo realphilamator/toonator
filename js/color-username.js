@@ -4,13 +4,11 @@ async function colorRussianUsernames() {
   const usernameEls = document.querySelectorAll('a.username:not([data-colored])');
   if (!usernameEls.length) return;
 
-  // Mark immediately to prevent re-processing
   usernameEls.forEach(el => el.setAttribute('data-colored', '1'));
 
   const usernames = [...new Set(
     [...usernameEls]
       .map(el => {
-        // Extract username from href="/user/USERNAME" — more reliable than textContent
         const href = el.getAttribute('href') || '';
         const match = href.match(/\/user\/([^/?#]+)/);
         return match ? decodeURIComponent(match[1]) : null;
@@ -38,13 +36,23 @@ async function colorRussianUsernames() {
         };
       }
       const cached = RUSSIAN_USERS_CACHE[uname];
-      // Match by href instead of textContent
       document.querySelectorAll(`a.username[href="/user/${encodeURIComponent(uname)}"]`).forEach(el => {
-        if (cached.role === 'admin') el.classList.add('admin');
-        else if (cached.role === 'mod') el.classList.add('mod');
-        else if (cached.russian) el.classList.add('russian');
+        if (cached.role === 'admin') {
+          el.classList.add('admin');
+        } else if (cached.role === 'mod') {
+          el.classList.add('mod');
+        } else if (cached.russian) {
+          el.classList.add('russian');
+        } else {
+          el.classList.add('foreign'); // default blue for regular users
+        }
       });
-    } catch (e) {}
+    } catch (e) {
+      // On error, fall back to foreign so it at least has a color
+      document.querySelectorAll(`a.username[href="/user/${encodeURIComponent(uname)}"]`).forEach(el => {
+        el.classList.add('foreign');
+      });
+    }
   }));
 }
 

@@ -35,7 +35,7 @@ export async function loadComments(toonId) {
           <a href="/user/${encodeURIComponent(username)}"><img class="avatar" src="${escapeHTML(ud.avatar)}" onerror="this.onerror=null;this.src='/img/avatar100.gif'"/></a>
         </div>
         <div class="head">
-          <a href="/user/${encodeURIComponent(username)}" class="username foreign${ud.russian ? " russian" : ""}">${username}</a>
+          <a href="/user/${encodeURIComponent(username)}" class="username${ud.russian ? " russian" : ""}">${username}</a>
           <span class="date"><b>${dateStr}</b></span>
         </div>
         <div class="text">${commentText}</div>
