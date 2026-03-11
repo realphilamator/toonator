@@ -20,7 +20,90 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnSave').addEventListener('click', openSaveDialog);
   document.getElementById('saveCancel').addEventListener('click', closeSaveDialog);
   document.getElementById('saveFinal').addEventListener('click', saveAnimation);
+  document.getElementById('saveLocalBtn').addEventListener('click', saveLocal);
+  document.getElementById('loadLocalBtn').addEventListener('click', loadLocal);
 });
+
+/* =====================================================
+   LOCAL SAVE
+   Exports the current frames array as a .json file.
+   Filename is taken from the Name field (or "animation").
+===================================================== */
+
+function saveLocal() {
+  const title = (document.getElementById('saveDialogName').value.trim() || 'animation');
+  const payload = JSON.stringify(frames);
+  const blob = new Blob([payload], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = title.replace(/[^a-z0-9_\-]/gi, '_') + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* =====================================================
+   LOCAL LOAD
+   Imports a .json file previously saved with saveLocal().
+   Supports both a raw array [ {strokes:[]}, ... ]
+   and a wrapped object { frames: [ {strokes:[]}, ... ] }.
+===================================================== */
+
+function loadLocal() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,application/json';
+
+  input.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+
+      // Accept both raw array and {frames:[...]} wrapper
+      const loaded = Array.isArray(data)
+        ? data
+        : (data && Array.isArray(data.frames) ? data.frames : null);
+
+      if (!loaded || loaded.length === 0) {
+        throw new Error('No frames found in file.');
+      }
+
+      // Validate basic shape of first frame
+      if (typeof loaded[0] !== 'object' || !Array.isArray(loaded[0].strokes)) {
+        throw new Error('File does not look like a Toonator animation.');
+      }
+
+      // Replace current frames
+      frames.length = 0;
+      loaded.forEach(f => frames.push(f));
+
+      // Rebuild thumbnails
+      frameThumbs.length = 0;
+      frames.forEach((_, i) => updateThumbnail(i));
+
+      currentFrame = 0;
+      previousFrame = -1;
+      lastViewedFrame = -1;
+
+      updateSliderMax();
+      render();
+      drawFramesTimeline();
+
+      closeSaveDialog();
+
+    } catch (err) {
+      const status = document.getElementById('saveStatus');
+      status.textContent = 'Load failed: ' + err.message;
+    }
+  });
+
+  input.click();
+}
 
 /* =====================================================
    RENDER FRAME TO CANVAS AT SIZE
