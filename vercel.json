@@ -5,6 +5,7 @@
     { "src": "/style.css", "dest": "/style.css" },
     { "src": "/img/(.*)", "dest": "/img/$1" },
 
+    { "src": "/moderation", "dest": "/moderation/index.html" },
     { "src": "/moderation/(.*)", "dest": "/moderation/$1" },
 
     { "src": "/(.*)", "dest": "/maintenance.html" }
