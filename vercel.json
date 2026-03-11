@@ -3,7 +3,10 @@
 
   "routes": [
     { "src": "/style.css", "dest": "/style.css" },
+    { "src": "/css/(.*)", "dest": "/css/$1" },
+    { "src": "/js/(.*)", "dest": "/js/$1" },
     { "src": "/img/(.*)", "dest": "/img/$1" },
+    { "src": "/favicon.ico", "dest": "/favicon.ico" },
 
     { "src": "/moderation", "dest": "/moderation/index.html" },
     { "src": "/moderation/(.*)", "dest": "/moderation/$1" },
