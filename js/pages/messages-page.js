@@ -44,30 +44,24 @@ export async function initMessages(recipientUsername) {
     // Load messages
     await loadMessages();
   } else {
-    document.getElementById("page_title").textContent = "Feedback";
+    document.getElementById("page_title").textContent = "Messages";
     document.getElementById("recipient_info").innerHTML =
-      "<p>Your message will be sent to the website administration.</p>";
-    document.getElementById("message_form").style.display = "block";
+      '<p style="color:#888888;">Please select a user to message.</p>';
+    document.getElementById("message_form").style.display = "none";
+    return;
   }
 
   // Setup send button
   window.sendMessage = async function () {
+    if (!currentRecipient) return;
     const text = document.getElementById("message_text").value.trim();
     if (!text) return;
 
-    const { success, error } = await postMessage(
-      currentRecipient || "admin",
-      text,
-    );
+    const { success, error } = await postMessage(currentRecipient, text);
 
     if (success) {
       document.getElementById("message_text").value = "";
-      if (currentRecipient) {
-        await loadMessages();
-      } else {
-        document.getElementById("messages_list").innerHTML =
-          '<p style="color:#888888;font-size:10pt;padding:10px;">Message sent!</p>';
-      }
+      await loadMessages();
     } else {
       alert("Error sending message: " + (error?.message || "Unknown error"));
     }

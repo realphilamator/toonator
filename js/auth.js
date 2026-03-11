@@ -47,6 +47,10 @@ async function updateAuthUI() {
   }
 
   setupHeaderEvents();
+
+  // Show menu now that auth state is set
+  const menu = document.getElementById("newmenu");
+  if (menu) menu.style.display = "";
 }
 
 function setupHeaderEvents() {
