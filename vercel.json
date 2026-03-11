@@ -1,5 +1,12 @@
 {
   "trailingSlash": false,
+
+  "routes": [
+    { "src": "/style.css", "dest": "/style.css" },
+    { "src": "/img/(.*)", "dest": "/img/$1" },
+    { "src": "/(.*)", "dest": "/maintenance.html" }
+  ],
+  
   "rewrites": [
     { "source": "/toon/:id", "destination": "/pages/toon.html?id=:id" },
     { "source": "/toon/:id/", "destination": "/pages/toon.html?id=:id" },
