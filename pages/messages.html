@@ -20,12 +20,13 @@
             <span id="recipient_info"></span>
           </div>
           <div class="content_left">
-            <h1 id="page_title">Messages</h1>
+            <h1 id="page_title" data-i18n="page_title">Messages</h1>
             <div id="message_form" style="display: none">
               <span class="form">
                 <span class="form1"></span>
                 <textarea
                   id="message_text"
+                  data-i18n-placeholder="message_placeholder"
                   placeholder="Write a message..."
                   style="
                     border: 1px solid #cccccc;
@@ -45,10 +46,8 @@
                 "
               >
                 <button
-                  onclick="
-                    sendMessage();
-                    return false;
-                  "
+                  data-i18n="btn_send"
+                  onclick="sendMessage(); return false;"
                 >
                   Send
                 </button>
@@ -63,11 +62,11 @@
     </div>
 
     <script type="module">
+      import { initI18n } from '/js/i18n.js';
       import { initMessages } from "/js/pages/messages-page.js";
-
+      await initI18n('messages');
       const params = new URLSearchParams(window.location.search);
       const recipientUsername = params.get("username");
-
       initMessages(recipientUsername);
     </script>
   </body>

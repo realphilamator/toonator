@@ -1,8 +1,8 @@
 // Home Page Controller - Load and display popular/newest toons
-
 import { supabaseRequest, rpc, escapeHTML } from "/js/api.js";
 import { loadIncludes } from "/js/utils/includes.js";
 import { colorUsernames } from "/js/color-username.js";
+import { initI18n, t } from "/js/i18n.js";
 
 const SUPABASE_URL = "https://ytyhhmwnnlkhhpvsurlm.supabase.co";
 
@@ -18,8 +18,8 @@ function toonCardHTML(toon, username) {
       : [];
   const frameCount = frames.length;
   const frameStr =
-    frameCount >= 50 ? `<b>${frameCount}</b> frames` : `${frameCount} frames`;
-  const commentStr = `<span class="grayb">No comments</span>`;
+    frameCount >= 50 ? `<b>${frameCount}</b> ${t("frames")}` : `${frameCount} ${t("frames")}`;
+  const commentStr = `<span class="grayb">${t('no_comments', 'toon')}</span>`;
   const title = escapeHTML(toon.title || "Untitled");
   const toonUrl = `/toon/${toon.id}`;
   const profileUrl = `/user/${encodeURIComponent(username)}`;
@@ -58,7 +58,7 @@ async function loadPopular() {
   );
   const list = document.getElementById("popular-list");
   if (!toons || toons.length === 0) {
-    list.innerHTML = '<div style="text-align:center;color:#888;padding:10px;">No toons yet.</div>';
+    list.innerHTML = `<div style="text-align:center;color:#888;padding:10px;">${t('loading')}</div>`;
     return;
   }
   const userMap = await resolveUsernames(toons);
@@ -72,7 +72,7 @@ async function loadNewest() {
   );
   const list = document.getElementById("newest-list");
   if (!toons || toons.length === 0) {
-    list.innerHTML = '<div style="text-align:center;color:#888;padding:10px;">No toons yet.</div>';
+    list.innerHTML = `<div style="text-align:center;color:#888;padding:10px;">${t('loading')}</div>`;
     return;
   }
   const userMap = await resolveUsernames(toons);
@@ -85,6 +85,7 @@ async function loadGoodPlace() {
 }
 
 export async function initHome() {
+  await initI18n('home');
   await loadIncludes();
   await loadPopular();
   await loadNewest();

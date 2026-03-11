@@ -2,6 +2,7 @@
 import { db } from "/js/config.js";
 import { loadIncludes } from "/js/utils/includes.js";
 import { colorUsernames } from "/js/color-username.js";
+import { initI18n, t } from "/js/i18n.js";
 
 const SUPABASE_URL = "https://ytyhhmwnnlkhhpvsurlm.supabase.co";
 const SUPABASE_ANON_KEY =
@@ -50,11 +51,11 @@ async function rpc(fn, params) {
 function toonCardHTML(toon, username) {
   const frames = Array.isArray(toon.frames) ? toon.frames : toon.frames ? Object.values(toon.frames) : [];
   const frameCount = parseInt(frames.length) || 0;
-  const frameStr = frameCount >= 50 ? `<b>${frameCount}</b> frames` : `${frameCount} frames`;
+  const frameStr = frameCount >= 50 ? `<b>${frameCount}</b> ${t("frames")}` : `${frameCount} ${t("frames")}`;
   const commentCount = parseInt(toon.comment_count) || 0;
   const commentStr = commentCount > 0
-    ? `${commentCount} comment${commentCount !== 1 ? "s" : ""}`
-    : `<span class="grayb">No comments</span>`;
+    ? `${commentCount} ${commentCount !== 1 ? t("comments") : t("comment")}`
+    : `<span class="grayb">${t("no_comments", "toon")}</span>`;
   const medal = toon.featured ? `<img class="toonmedal" src="/img/medal.gif"/>` : "";
   const title = escapeHTML(toon.title || "Untitled");
   const toonId = escapeHTML(String(toon.id));
@@ -104,14 +105,14 @@ async function loadToons() {
   );
   const toonsList = document.getElementById("toons-list");
   if (!res.ok) {
-    toonsList.innerHTML = '<div style="text-align:center;color:#888;padding:20px;">Failed to load toons.</div>';
+    toonsList.innerHTML = `<div style="text-align:center;color:#888;padding:20px;">${t('loading')}</div>`;
     return;
   }
 
   const toons = await res.json();
   const totalCount = parseInt(res.headers.get("Content-Range")?.split("/")[1] || "0", 10);
   if (!toons || toons.length === 0) {
-    toonsList.innerHTML = '<div style="text-align:center;color:#888;padding:20px;">No toons yet.</div>';
+    toonsList.innerHTML = `<div style="text-align:center;color:#888;padding:20px;">${t('loading')}</div>`;
     return;
   }
 
@@ -143,7 +144,9 @@ async function loadGoodPlace() {
   const username = userData?.[0]?.username || "unknown";
   const frames = Array.isArray(toon.frames) ? toon.frames : toon.frames ? Object.values(toon.frames) : [];
   const commentCount = parseInt(toon.comment_count) || 0;
-  const commentStr = commentCount > 0 ? `${commentCount} comments` : `<span class="grayb">No comments</span>`;
+  const commentStr = commentCount > 0
+    ? `${commentCount} comments`
+    : `<span class="grayb">${t('no_comments', 'toon')}</span>`;
   const title = escapeHTML(toon.title || "Untitled");
   const toonId = escapeHTML(String(toon.id));
   const encodedUsername = encodeURIComponent(username);
@@ -189,6 +192,7 @@ async function loadLastComments() {
 }
 
 export async function initLastPage() {
+  await initI18n('last');
   await loadIncludes();
   await loadToons();
   await loadGoodPlace();

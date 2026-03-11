@@ -17,7 +17,7 @@ import {
   showCommentForm,
   postCommentHandler,
 } from "/js/components/comments.js";
-import "/js/color-username.js";
+import { colorUsernames } from "/js/color-username.js";
 
 const SUPABASE_URL = "https://ytyhhmwnnlkhhpvsurlm.supabase.co";
 
