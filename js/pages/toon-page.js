@@ -1,0 +1,131 @@
+// Toon Page Controller - Main logic for toon page
+import {
+  getToonById,
+  getAuthorData,
+  getContinuedFromInfo,
+  escapeHTML,
+  formatDate,
+} from "/js/api.js";
+import { loadIncludes } from "/js/utils/includes.js";
+import {
+  initializeLikes,
+  handleLike,
+  handleFavorite,
+} from "/js/components/likes.js";
+import {
+  loadComments,
+  showCommentForm,
+  postCommentHandler,
+} from "/js/components/comments.js";
+import { colorUsernames } from "/js/color-username.js";
+
+const SUPABASE_URL = "https://ytyhhmwnnlkhhpvsurlm.supabase.co";
+
+export async function initToon(toonId) {
+  await loadIncludes();
+
+  const toonData = await getToonById(toonId);
+  if (!toonData) {
+    document.getElementById("toon_page").innerHTML =
+      '<p style="color:#888888;font-size:10pt;padding:10px 0;">Toon not found.</p>';
+    return;
+  }
+
+  const authorData = await getAuthorData(toonData.user_id);
+  const authorUsername = authorData.username;
+
+  const title = escapeHTML(toonData.title || "Untitled");
+  const description = escapeHTML(toonData.description || "");
+
+  document.getElementById("page_title").textContent = title + " - Toonator";
+  document.getElementById("og_title").content = title + " - Toonator. Draw animation yourself!";
+  document.getElementById("og_description").content = description || title;
+  document.getElementById("og_image").content = `${SUPABASE_URL}/storage/v1/object/public/previews/${toonId}_100.gif`;
+  document.getElementById("og_url").content = `https://toonator.site/toon/${toonId}`;
+
+  document.getElementById("toon_title").textContent = title;
+  document.getElementById("toon_date").textContent = formatDate(toonData.created_at);
+
+  const authorLink = document.getElementById("author_link");
+  authorLink.href = `/user/${encodeURIComponent(authorUsername)}`;
+  authorLink.textContent = authorUsername;
+  authorLink.className = "username";
+
+  const avatarEl = document.getElementById("author_avatar");
+  avatarEl.src = authorData.avatar;
+
+  if (toonData.continued_from) {
+    const contInfo = await getContinuedFromInfo(toonData.continued_from);
+    if (contInfo) {
+      document.getElementById("continued_from").innerHTML = `
+        <div style="font-size:9pt; margin-top:5px;">
+          Original: <a href="/toon/${contInfo.id}" class="noh" title="${contInfo.title} (${contInfo.author})">
+            &#x25ce; ${escapeHTML(contInfo.title)}
+          </a> by <a href="/user/${encodeURIComponent(contInfo.author)}" class="username">${escapeHTML(contInfo.author)}</a>
+        </div>
+      `;
+    }
+  }
+
+  if (description) {
+    document.getElementById("description_text").textContent = description;
+    document.getElementById("description_div").style.display = "block";
+  }
+
+  if (toonData.keywords) {
+    const tagsHtml = toonData.keywords
+      .split(",")
+      .map((k) => k.trim())
+      .filter(Boolean)
+      .map((k) => `<a href="#" class="tag">${escapeHTML(k)}</a>`)
+      .join(" ");
+    if (tagsHtml) {
+      document.getElementById("tags_container").innerHTML = tagsHtml;
+      document.getElementById("tags_container").style.display = "block";
+    }
+  }
+
+  const encodedTitle = encodeURIComponent(toonData.title || "Untitled");
+  document.getElementById("share_twitter").href =
+    `https://twitter.com/intent/tweet?url=https://toonator.site/toon/${toonId}&text=${encodedTitle}`;
+  document.getElementById("share_reddit").href =
+    `https://reddit.com/submit?url=https://toonator.site/toon/${toonId}&title=${encodedTitle}`;
+
+  document.getElementById("continue_link").href = `/draw/?continue=${toonId}`;
+
+  const frames = Array.isArray(toonData.frames)
+    ? toonData.frames
+    : toonData.frames ? Object.values(toonData.frames) : [];
+  const toonSettings = toonData.settings || {};
+  if (window.initToonPlayer) initToonPlayer("player_container", frames, toonSettings);
+
+  await initializeLikes(toonId);
+  await loadComments(toonId); // colorUsernames called inside loadComments
+
+  // Color the author link (not inside loadComments)
+  await colorUsernames();
+
+  setupEventHandlers(toonId);
+}
+
+function setupEventHandlers(toonId) {
+  const likeLink = document.getElementById("like_link");
+  if (likeLink) likeLink.onclick = (e) => { e.preventDefault(); handleLike(toonId); };
+
+  const favLink = document.getElementById("favlink");
+  if (favLink) favLink.onclick = (e) => { e.preventDefault(); handleFavorite(); };
+
+  const addCommentBtn = document.getElementById("addCommentBtn");
+  if (addCommentBtn) addCommentBtn.onclick = (e) => { e.preventDefault(); showCommentForm(); };
+
+  const postBtn = document.querySelector('button[onclick*="postCommentHandler"]');
+  if (postBtn) postBtn.onclick = (e) => { e.preventDefault(); postCommentHandler(toonId); };
+
+  const cancelBtn = document.querySelector("button:last-of-type");
+  if (cancelBtn) {
+    cancelBtn.onclick = (e) => {
+      e.preventDefault();
+      document.getElementById("comments_form").style.display = "none";
+    };
+  }
+}

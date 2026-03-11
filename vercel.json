@@ -1,11 +1,31 @@
 {
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/toon/:id", "destination": "/api/toon/[id]" },
-    { "source": "/toon/:id/", "destination": "/api/toon/[id]" },
-    { "source": "/user/:username", "destination": "/api/user/[username]" },
-    { "source": "/user/:username/", "destination": "/api/user/[username]" },
-    { "source": "/user/:username/:page", "destination": "/api/user/[username]" },
-    { "source": "/user/:username/:page/", "destination": "/api/user/[username]" }
+    { "source": "/toon/:id", "destination": "/pages/toon.html?id=:id" },
+    { "source": "/toon/:id/", "destination": "/pages/toon.html?id=:id" },
+    {
+      "source": "/user/:username",
+      "destination": "/pages/profile.html?username=:username"
+    },
+    {
+      "source": "/user/:username/",
+      "destination": "/pages/profile.html?username=:username"
+    },
+    {
+      "source": "/user/:username/:page",
+      "destination": "/pages/profile.html?username=:username"
+    },
+    {
+      "source": "/user/:username/:page/",
+      "destination": "/pages/profile.html?username=:username"
+    },
+    { "source": "/last", "destination": "/pages/last.html" },
+    { "source": "/last/", "destination": "/pages/last.html" },
+    { "source": "/colorful", "destination": "/pages/last.html?view=colorful" },
+    { "source": "/colorful/", "destination": "/pages/last.html?view=colorful" },
+    { "source": "/sandbox", "destination": "/pages/last.html?view=sandbox" },
+    { "source": "/sandbox/", "destination": "/pages/last.html?view=sandbox" },
+    { "source": "/messages", "destination": "/pages/messages.html" },
+    { "source": "/messages/", "destination": "/pages/messages.html" }
   ]
 }

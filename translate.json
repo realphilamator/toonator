@@ -1,0 +1,256 @@
+{
+  "en": {
+    "pages": {
+      "header": {
+        "logo_title": "Toonator",
+        "join": "Join",
+        "sign_in": "Sign In",
+        "my_toons": "My toons",
+        "settings": "Settings",
+        "sign_out": "Sign Out"
+      },
+      "footer": {
+        "feedback": "Feedback",
+        "help": "Help"
+      },
+      "home": {
+        "title": "Toonator.com - Make animation online!",
+        "most_popular": "Most popular toons",
+        "newest": "Newest toons",
+        "tagline": "Toonator is online cartoon editing tool.",
+        "tagline_sub": "With Toonator you can easily make funny animations.",
+        "loading": "Loading...",
+        "frames": "frames",
+        "no_comments": "No comments",
+        "comment": "comment",
+        "comments": "comments"
+      },
+      "last": {
+        "title": "Last toons - Toonator.com",
+        "nav_oldschool": "Oldschool",
+        "nav_colorful": "Colorfull",
+        "nav_sandbox": "Sandbox",
+        "loading": "Loading...",
+        "good_place": "Good Place",
+        "last_comments": "Last comments",
+        "frames": "frames",
+        "no_comments": "No comments",
+        "comment": "comment",
+        "comments": "comments"
+      },
+      "toon": {
+        "title": "Toon - Toonator",
+        "loading": "Loading...",
+        "no_comments": "No comments yet.",
+        "comments_header": "Comments",
+        "add_comment": "Add comment",
+        "comment_placeholder": "Write a comment...",
+        "btn_post": "Post",
+        "btn_cancel": "Cancel",
+        "btn_like": "Like",
+        "btn_favorites": "Favorites",
+        "btn_continue": "Continue",
+        "share_label": "Share:"
+      },
+      "profile": {
+        "title": "User Profile - Toonator",
+        "total_toons": "Total toons:",
+        "total_drafts": "Total drafts:",
+        "total_comments": "Total comments:",
+        "rank": "Rank:",
+        "rank_default": "Passer",
+        "private_messages": "Private messages",
+        "tab_album": "Album",
+        "tab_favorites": "Favorites",
+        "tab_comments": "Comments",
+        "loading": "Loading..."
+      },
+      "messages": {
+        "title": "Messages - Toonator",
+        "page_title": "Messages",
+        "dialogs": "Dialogs",
+        "new_dialog": "New dialog",
+        "recipient_label": "Username:",
+        "btn_start": "Start",
+        "message_placeholder": "Write a message...",
+        "btn_send": "Send"
+      },
+      "register": {
+        "title": "Sign up - Toonator",
+        "heading": "Sign up",
+        "label_username": "Username:",
+        "label_password": "Password:",
+        "label_repeat_password": "Repeat password:",
+        "label_email": "E-mail:",
+        "username_placeholder": "Letters, numbers, _ or -",
+        "btn_register": "Register",
+        "err_username": "Username must be 3–30 characters: letters, numbers, _ or - only",
+        "err_no_password": "no password",
+        "err_password_match": "passwords don't match",
+        "err_no_email": "no email"
+      },
+      "login": {
+        "heading": "Login",
+        "label_username": "Username:",
+        "label_password": "Password:",
+        "remember_me": "Remember me",
+        "btn_login": "Login",
+        "forgot_password": "Forgot password?",
+        "login_with_social": "You can login via social network",
+        "login_with_password": "Login with username and password"
+      },
+      "draw": {
+        "title": "Toonator Rebuild",
+        "settings_title": "Settings",
+        "settings_group_brush": "BRUSH",
+        "settings_group_onion": "ONION SKIN",
+        "settings_group_playback": "PLAYBACK",
+        "setting_oldschool": "Oldschool brush",
+        "setting_oldschool_hint": "(type \"old\")",
+        "setting_smoothing": "Curve smoothing",
+        "setting_simplify": "Simplify",
+        "setting_simplify_hint": "(0 = off)",
+        "setting_onion": "Enable onion skin",
+        "setting_onion2": "2nd previous frame",
+        "setting_alpha1": "Frame -1 opacity",
+        "setting_alpha2": "Frame -2 opacity",
+        "setting_fps": "Speed (FPS)",
+        "save_label_name": "Name:",
+        "save_label_keywords": "Keywords:",
+        "save_label_description": "Description:",
+        "save_label_draft": "Draft",
+        "save_btn_local": "save local",
+        "load_btn_local": "load local",
+        "btn_cancel": "cancel",
+        "btn_save": "save"
+      }
+    }
+  },
+  "ru": {
+    "pages": {
+      "header": {
+        "logo_title": "Мультатор",
+        "join": "Присоединиться",
+        "sign_in": "Войти",
+        "my_toons": "Мои мульты",
+        "settings": "Настройки",
+        "sign_out": "Выйти"
+      },
+      "footer": {
+        "feedback": "Обратная связь",
+        "help": "Помощь"
+      },
+      "home": {
+        "title": "Мультатор. Нарисовать мультфильм. Анимация онлайн.",
+        "most_popular": "Популярные мульты",
+        "newest": "Самые новые мульты",
+        "tagline": "Мультатор — это онлайн-редактор мультиков.",
+        "tagline_sub": "С помощью нашего проекта вы легко можете нарисовать мультфильм, независимо от вашего мастерства.",
+        "loading": "Загрузка...",
+        "frames": "кадров",
+        "no_comments": "Нет комментариев",
+        "comment": "комментарий",
+        "comments": "комментариев"
+      },
+      "last": {
+        "title": "Олдскул - Мультатор. Нарисовать мультфильм. Анимация онлайн.",
+        "nav_oldschool": "Олдскул",
+        "nav_colorful": "Цветные",
+        "nav_sandbox": "Песочница",
+        "loading": "Загрузка...",
+        "good_place": "Козырное место",
+        "last_comments": "Последние комментарии",
+        "frames": "кадров",
+        "no_comments": "Нет комментариев",
+        "comment": "комментарий",
+        "comments": "комментариев"
+      },
+      "toon": {
+        "title": "Тунс - Мультатор",
+        "loading": "Загрузка...",
+        "no_comments": "Нет комментариев",
+        "comments_header": "Последние комментарии",
+        "add_comment": "Добавить комментарий",
+        "comment_placeholder": "Напишите комментарий...",
+        "btn_post": "Отправить",
+        "btn_cancel": "Отмена",
+        "btn_like": "Мне понравилось",
+        "btn_favorites": "Избранное",
+        "btn_continue": "Продолжить",
+        "share_label": "Поделиться:"
+      },
+      "profile": {
+        "title": "Профиль - Мультатор",
+        "total_toons": "Всего мультов:",
+        "total_drafts": "Всего черновиков:",
+        "total_comments": "Всего комментариев:",
+        "rank": "Ранг:",
+        "rank_default": "Прохожий",
+        "private_messages": "Личные сообщения",
+        "tab_album": "Альбом",
+        "tab_favorites": "Избранное",
+        "tab_comments": "Комментарии",
+        "loading": "Загрузка..."
+      },
+      "messages": {
+        "title": "Сообщения - Мультатор",
+        "page_title": "Сообщения",
+        "dialogs": "Диалоги",
+        "new_dialog": "Новый диалог",
+        "recipient_label": "Имя пользователя:",
+        "btn_start": "Начать",
+        "message_placeholder": "Написать сообщение...",
+        "btn_send": "Отправить"
+      },
+      "register": {
+        "title": "Регистрация - Мультатор. Нарисовать мультфильм. Анимация онлайн.",
+        "heading": "Регистрация",
+        "label_username": "Имя пользователя:",
+        "label_password": "Пароль:",
+        "label_repeat_password": "Повторите пароль:",
+        "label_email": "E-mail:",
+        "username_placeholder": "Буквы, цифры, _ или -",
+        "btn_register": "Регистрация",
+        "err_username": "Имя пользователя должно содержать 3–30 символов: буквы, цифры, _ или -",
+        "err_no_password": "введите пароль",
+        "err_password_match": "пароли не совпадают",
+        "err_no_email": "введите email"
+      },
+      "login": {
+        "heading": "Войти",
+        "label_username": "Имя пользователя:",
+        "label_password": "Пароль:",
+        "remember_me": "Запомнить меня",
+        "btn_login": "Войти",
+        "forgot_password": "Забыли пароль?",
+        "login_with_social": "Вы можете войти через социальную сеть",
+        "login_with_password": "Войти с помощью логина и пароля"
+      },
+      "draw": {
+        "title": "Мультатор. Нарисовать мультфильм. Анимация онлайн.",
+        "settings_title": "Настройки",
+        "settings_group_brush": "КИСТЬ",
+        "settings_group_onion": "ЛУКОВАЯ КОЖИЦА",
+        "settings_group_playback": "ВОСПРОИЗВЕДЕНИЕ",
+        "setting_oldschool": "Кисть Олдскул",
+        "setting_oldschool_hint": "(наберите \"off\")",
+        "setting_smoothing": "Смягчение линий",
+        "setting_simplify": "Упрощение",
+        "setting_simplify_hint": "(0 = выключено)",
+        "setting_onion": "Включить луковую кожицу",
+        "setting_onion2": "2ой предыдущий кадр",
+        "setting_alpha1": "Прозрачность -1 кадра",
+        "setting_alpha2": "Прозрачность -2 кадра",
+        "setting_fps": "Скорость (FPS)",
+        "save_label_name": "Название:",
+        "save_label_keywords": "Ключевые слова:",
+        "save_label_description": "Описание:",
+        "save_label_draft": "Черновик",
+        "save_btn_local": "сохранить локально",
+        "load_btn_local": "загрузить локально",
+        "btn_cancel": "отмена",
+        "btn_save": "сохранить"
+      }
+    }
+  }
+}

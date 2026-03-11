@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title id="page_title">User Profile - Toonator</title>
+    <link rel="shortcut icon" href="/img/favicon-eyes.png" />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/css/font.css" />
+    <link rel="stylesheet" href="/css/images.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/config.js" type="module"></script>
+    <script src="/js/auth.js"></script>
+  </head>
+  <body>
+    <div id="header_placeholder"></div>
+    <div id="content_wrap">
+      <div id="content">
+        <div class="userprofile">
+          <div class="content_right">
+            <div class="center">
+              <h3 id="profile_username_wrap">
+                <a id="profile_username" class="username"></a>
+              </h3>
+              <div class="center">
+                <img id="profile_avatar" src="/img/avatar100.gif" class="p100" />
+              </div>
+            </div>
+            <span data-i18n="total_toons">Total toons:</span> <span id="stat_toons">...</span><br />
+            <span id="stat_drafts_row" style="display: none">
+              <span data-i18n="total_drafts">Total drafts:</span> <span id="stat_drafts">0</span><br />
+            </span>
+            <span data-i18n="total_comments">Total comments:</span> <span id="stat_comments">0</span><br />
+            <br />
+            <span data-i18n="rank">Rank:</span> <b id="stat_rank" data-i18n="rank_default">Passer</b><br />
+            <br />
+            <a
+              id="private_messages_link"
+              href="#"
+              style="display: none; font-size: 10pt"
+              data-i18n="private_messages"
+            >Private messages</a>
+          </div>
+          <div class="content_left">
+            <h1>
+              <span style="font-weight: normal">
+                <a class="nmenu selected" href="#" data-i18n="tab_album">Album</a> |
+                <a class="nmenu" href="#" data-i18n="tab_favorites">Favorites</a> |
+                <a class="nmenu" href="#" data-i18n="tab_comments">Comments</a>
+              </span>
+            </h1>
+            <div id="paginator_top"></div>
+            <div class="toons_container">
+              <div class="toons_list" id="toons_list">
+                <p style="color: #888888; font-size: 10pt; padding: 10px 0" data-i18n="loading">
+                  Loading...
+                </p>
+              </div>
+            </div>
+            <div id="paginator_bottom"></div>
+          </div>
+        </div>
+        <div style="clear: both"></div>
+      </div>
+      <div id="donate_placeholder"></div>
+      <div id="footer_placeholder"></div>
+    </div>
+
+    <script type="module">
+      import { initI18n } from '/js/i18n.js';
+      import { initProfile } from "/js/pages/profile-page.js";
+      await initI18n('profile');
+      const PROFILE_USERNAME =
+        new URLSearchParams(window.location.search).get("username") ||
+        decodeURIComponent(
+          window.location.pathname.split("/").filter(Boolean)[1],
+        );
+      initProfile(PROFILE_USERNAME);
+    </script>
+  </body>
+</html>

@@ -12,7 +12,7 @@ canvas {
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/js/config.js"></script>
+<script type="module" src="/js/config.js"></script>
 <script src="/js/gif.js"></script>
 
 </head>
@@ -145,6 +145,12 @@ canvas {
     <div style="text-align:center; margin-bottom:8px;">
       <span id="saveStatus" style="font-size:11px; color:#ffcc88;"></span>
     </div>
+    <!-- Local save / load row -->
+    <div style="display:flex; justify-content:center; gap:8px; margin-bottom:10px;">
+      <button id="saveLocalBtn" style="background:#444; color:#fff; border:none; border-radius:4px; padding:7px 16px; font-size:12px; cursor:pointer;">&#11015; save local</button>
+      <button id="loadLocalBtn" style="background:#444; color:#fff; border:none; border-radius:4px; padding:7px 16px; font-size:12px; cursor:pointer;">&#11014; load local</button>
+    </div>
+    <!-- Supabase save / cancel row -->
     <div style="display:flex; justify-content:center; gap:12px;">
       <button id="saveCancel" style="background:#444; color:#fff; border:none; border-radius:4px; padding:7px 24px; font-size:13px; cursor:pointer;">cancel</button>
       <button id="saveFinal" style="background:#333; color:#fff; border:none; border-radius:4px; padding:7px 24px; font-size:13px; cursor:pointer;">save</button>

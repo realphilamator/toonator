@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Messages - Toonator</title>
+    <link rel="shortcut icon" href="/img/favicon-eyes.png" />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/css/font.css" />
+    <link rel="stylesheet" href="/css/images.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/config.js" type="module"></script>
+    <script src="/js/auth.js"></script>
+  </head>
+  <body>
+    <div id="header_placeholder"></div>
+    <div id="content_wrap">
+      <div id="content">
+        <span class="profile">
+          <div class="content_right">
+            <span id="recipient_info"></span>
+          </div>
+          <div class="content_left">
+            <h1 id="page_title" data-i18n="page_title">Messages</h1>
+            <div id="message_form" style="display: none">
+              <span class="form">
+                <span class="form1"></span>
+                <textarea
+                  id="message_text"
+                  data-i18n-placeholder="message_placeholder"
+                  placeholder="Write a message..."
+                  style="
+                    border: 1px solid #cccccc;
+                    margin: 10px;
+                    width: 580px;
+                    font-family: Arial;
+                    font-size: 10pt;
+                  "
+                ></textarea>
+              </span>
+              <span
+                class="form2"
+                style="
+                  text-align: right;
+                  margin-right: 10px;
+                  margin-bottom: 10px;
+                "
+              >
+                <button
+                  data-i18n="btn_send"
+                  onclick="sendMessage(); return false;"
+                >
+                  Send
+                </button>
+              </span>
+            </div>
+            <div id="messages_list" class="toon_comments"></div>
+          </div>
+        </span>
+        <div style="clear: both"></div>
+        <div id="footer_placeholder"></div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { initI18n } from '/js/i18n.js';
+      import { initMessages } from "/js/pages/messages-page.js";
+      await initI18n('messages');
+      const params = new URLSearchParams(window.location.search);
+      const recipientUsername = params.get("username");
+      initMessages(recipientUsername);
+    </script>
+  </body>
+</html>

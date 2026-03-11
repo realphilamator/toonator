@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Last toons - Toonator.com</title>
+    <link rel="shortcut icon" href="/img/favicon-eyes.png" />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/css/font.css" />
+    <link rel="stylesheet" href="/css/images.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/config.js" type="module"></script>
+    <script src="/js/auth.js"></script>
+  </head>
+  <body>
+    <div id="donate_placeholder"></div>
+    <div id="header_placeholder"></div>
+
+    <div id="content_wrap">
+      <div id="content">
+        <div class="content_left">
+          <h1>
+            <a href="/oldschool" class="nmenu selected" data-i18n="nav_oldschool">Oldschool</a>
+            |
+            <a href="/colorful" class="nmenu" data-i18n="nav_colorful">Colorfull</a>
+            |
+            <a href="/sandbox" class="nmenu" data-i18n="nav_sandbox">Sandbox</a>
+          </h1>
+
+          <div class="paginator" id="paginator-top"></div>
+
+          <div class="toons_container">
+            <div class="toons_list" id="toons-list">
+              <div style="text-align: center; color: #888; padding: 20px" data-i18n="loading">
+                Loading...
+              </div>
+            </div>
+          </div>
+
+          <div class="paginator" id="paginator-bottom"></div>
+        </div>
+
+        <div class="content_right">
+          <h1><a href="/goodplace/" data-i18n="good_place">Good Place</a></h1>
+          <div id="good-place-toon"></div>
+
+          <h1 data-i18n="last_comments">Last comments</h1>
+          <div id="last-comments"></div>
+        </div>
+
+        <div class="clear"></div>
+      </div>
+      <div id="footer_placeholder"></div>
+    </div>
+
+    <script type="module">
+      import { initLastPage } from "/js/pages/last-page.js";
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initLastPage);
+      } else {
+        initLastPage();
+      }
+    </script>
+  </body>
+</html>
