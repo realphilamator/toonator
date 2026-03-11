@@ -87,7 +87,7 @@ export async function initProfile(username) {
   // Show private messages link if viewing another profile and logged in
   if (currentUser && !isOwnProfile) {
     const pmLink = document.getElementById("private_messages_link");
-    pmLink.href = `/messages/${username}/`;
+    pmLink.href = `/pages/messages.html?username=${encodeURIComponent(username)}`;
     pmLink.style.display = "";
   }
 

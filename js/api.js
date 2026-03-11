@@ -417,6 +417,51 @@ export async function updateUserAvatar(username, toonId) {
 }
 
 // Load includes HTML
+// ============================================================
+// Messages API
+// ============================================================
+
+export async function getMessages(recipientUsername, userId) {
+  // Get messages between current user and recipient
+  const { data, error } = await db
+    .from("messages")
+    .select("*")
+    .or(
+      `and(sender_id.eq.${userId},recipient_username.eq.${recipientUsername}),and(sender_username.eq.${recipientUsername},recipient_id.eq.${userId})`,
+    )
+    .order("created_at", { ascending: true })
+    .limit(100);
+
+  return data || [];
+}
+
+export async function postMessage(recipientUsername, text) {
+  const {
+    data: { user },
+  } = await db.auth.getUser();
+  if (!user) return { error: "Not authenticated", success: false };
+
+  const username = user.user_metadata?.username || user.email;
+
+  // Get recipient user ID
+  const recipientData = await rpc("get_user_by_username", {
+    p_username: recipientUsername,
+  });
+  const recipientId =
+    recipientData && recipientData.length > 0 ? recipientData[0].id : "admin";
+
+  const { data, error } = await db.from("messages").insert({
+    sender_id: user.id,
+    sender_username: username,
+    recipient_id: recipientId,
+    recipient_username: recipientUsername,
+    text: text,
+  });
+
+  return { data, error, success: !error };
+}
+
+// Load includes HTML
 export async function loadIncludes() {
   const [header, footer, donate, modal] = await Promise.all([
     fetch("/includes/header.html").then((r) => r.text()),
