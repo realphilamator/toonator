@@ -17,6 +17,27 @@ const db = createClient(
   "https://ytyhhmwnnlkhhpvsurlm.supabase.co",
   "YOUR_ANON_KEY"
 );
+
+async function promptLogin() {
+  const email = prompt("Admin email:");
+  if (!email) return;
+
+  const password = prompt("Password:");
+  if (!password) return;
+
+  const { data, error } = await db.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    alert("Login failed: " + error.message);
+    return;
+  }
+
+  location.reload();
+}
+
 </script>
 
 <script src="/js/auth.js"></script>
@@ -274,32 +295,18 @@ el.className="mod-status "+(ok?"ok":"err")
 setTimeout(()=>{el.className="mod-status"},4000)
 }
 
-async function init(){
-
-const {data:{user}}=await db.auth.getUser()
-
-if(!user){
-document.getElementById("access-denied").style.display="block"
-return
-}
-
-const {data:profile}=await db
-.from("profiles")
-.select("username,role")
-.eq("id",user.id)
-.single()
-
-if(!profile||!["admin","mod"].includes(profile.role)){
-document.getElementById("access-denied").style.display="block"
-return
-}
-
-currentUserRole=profile.role
-
-document.getElementById("mod-content").style.display="block"
-
-loadIpBans()
-
+if (!user) {
+  document.getElementById("access-denied").innerHTML = `
+    <div style="margin-top:40px">
+      You must be signed in to access the moderation panel.
+      <br><br>
+      <button class="mod-btn btn-search" onclick="promptLogin()">
+        Sign In
+      </button>
+    </div>
+  `;
+  document.getElementById("access-denied").style.display = "block";
+  return;
 }
 
 async function searchUser(){
