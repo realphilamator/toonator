@@ -91,11 +91,10 @@ function hideRightPanel() {
   var newW = 1000;
   var newH = Math.round(newW / 2) + 90;
   $('#draw_container').animate({ width: newW }, 100, function() {
+    var container = document.getElementById('ruffleContainer');
     var player = document.getElementById('rufflePlayer');
-    if (player) {
-        player.style.width = newW + 'px';
-        player.style.height = newH + 'px';
-    }
+    if (container) { container.style.width = newW + 'px'; container.style.height = newH + 'px'; }
+    if (player) { player.style.width = newW + 'px'; player.style.height = newH + 'px'; }
     $('#draw_container').css('height', newH + 'px');
   });
 }
@@ -108,20 +107,14 @@ function hideRightPanel() {
     <h2 id="drawPageTitle">New animation</h2>
     <span style="display:inline-block; background:#cccccc; padding:10px; vertical-align:top; font-size:0; line-height:0;">
       <div id="draw_container" style="width:600px; height:390px;">
-        <ruffle-player
-          id="rufflePlayer"
-          src="/swf/draw31en.swf"
-          width="600"
-          height="390"
-          style="display:block; width:600px; height:390px;"
-          quality="high"
-          allowscriptaccess="always"
-          bgcolor="#cccccc"
-        ></ruffle-player>
+        <div id="ruffleContainer" style="width:600px; height:390px;"></div>
       </div>
     </span>
     <span class="rightpanel" style="display:inline-block; width:370px; vertical-align:top;">
       <a href="#" style="font:8pt Tahoma; float:right; color:#000" onclick="hideRightPanel(); return false;">hide</a>
+      <span id="palettePrompt">
+        Click <a href="#" onclick="enablePalette(); return false;">here</a> to enable palette.
+      </span>
       <br><br>
       <a href="/wiki/Editor">Help</a>
     </span>
@@ -134,6 +127,62 @@ function hideRightPanel() {
         document.getElementById('drawPageTitle').textContent = 'Continue animation';
       }
     })();
+
+    // -------------------------------------------------------------------------
+    // ExternalInterface bridge: functions the SWF calls into JS
+    // -------------------------------------------------------------------------
+
+    // toggleFullscreen() is already defined in the <head> above — the SWF calls
+    // it directly when the user presses F inside the editor.
+
+    // m.lockExit('draw') / m.lockExit('draw', false)
+    // SWF calls this to set/clear a "you have unsaved changes" beforeunload guard.
+    window.m = window.m || {};
+    window.m.lockExit = function(key, lock) {
+      if (lock === false) {
+        window.onbeforeunload = null;
+      } else {
+        window.onbeforeunload = function(e) {
+          var msg = 'You have unsaved changes. Are you sure you want to leave?';
+          e.returnValue = msg;
+          return msg;
+        };
+      }
+    };
+
+    // -------------------------------------------------------------------------
+    // Ruffle init + JS → SWF callback wiring
+    // -------------------------------------------------------------------------
+    window.addEventListener('load', function() {
+      var ruffle = window.RufflePlayer.newest();
+      var player = ruffle.createPlayer();
+      player.id = 'rufflePlayer';
+      player.style.width = '600px';
+      player.style.height = '390px';
+      player.style.display = 'block';
+      document.getElementById('ruffleContainer').appendChild(player);
+      player.load({
+        url: '/swf/draw31en.swf',
+        quality: 'high',
+        allowScriptAccess: 'always',
+        backgroundColor: '#ffffff',
+        autoplay: 'on',
+        unmuteOverlay: 'hidden',
+        volume: 1
+      });
+
+      // enablePalette() is registered in AS3 via ExternalInterface.addCallback.
+      // Ruffle exposes these on the player element; wire it to window so the
+      // existing rightpanel "Click here to enable palette" link still works.
+      // enablePalette — retries until the SWF has registered the callback via ExternalInterface
+      window.enablePalette = function() {
+        try {
+          player.ruffle().callExposed('enablePalette');
+        } catch(e) {
+          setTimeout(window.enablePalette, 200);
+        }
+      };
+    });
     </script>
 
     <div style="clear:both"></div>
