@@ -7,3 +7,5 @@ const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Make db available globally for regular scripts (like auth.js)
 window.db = db;
+
+export { db, SUPABASE_URL, SUPABASE_ANON_KEY };
