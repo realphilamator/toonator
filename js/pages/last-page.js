@@ -206,8 +206,8 @@ async function loadLastComments() {
       return `
   <div class="comment ${i % 2 !== 0 ? "gray" : ""} last_comments">
     <div class="avatar">
-      <a href=\"/toon/${animId}\">
-        <img src=\"${SUPABASE_URL}/storage/v1/object/public/previews/${animId}_100.gif\" width=\"80\" onerror=\"this.onerror=null;this.src='/img/avatar100.gif'\"/>
+      <a href="/toon/${toonId}" title="${title}">
+        <img alt="${title}" title="${title}" src="${previewUrl(toonId)}" onerror="this.onerror=null;this.src='/img/avatar100.gif'">
       </a>
     </div>
     <div class=\"head\">
