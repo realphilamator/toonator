@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toonator.com - Draw animation online!</title>
+<link rel="shortcut icon" href="/img/favicon-eyes.png"/>
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/css/font.css">
+<link rel="stylesheet" href="/css/images.css">
+<link rel="stylesheet" href="/css/register.css">
+<script src="/js/ruffle/ruffle.js"></script>
+<script src="/js/jquery-1.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const { createClient } = supabase;
+  const db = createClient(
+    'https://ytyhhmwnnlkhhpvsurlm.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0eWhobXdubmxraGhwdnN1cmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzcwNTAsImV4cCI6MjA4ODU1MzA1MH0.XZVH3j6xftSRULfhdttdq6JGIUSgHHJt9i-vXnALjH0'
+  );
+</script>
+<script src="/js/auth.js"></script>
+<script>
+async function loadIncludes() {
+  const header = await fetch('/includes/header.html').then(r => r.text());
+  const footer = await fetch('/includes/footer.html').then(r => r.text());
+  const modal = await fetch('/includes/auth-modal.html').then(r => r.text());
+  document.getElementById('header_placeholder').innerHTML = header;
+  document.getElementById('footer_placeholder').innerHTML = footer;
+  document.body.insertAdjacentHTML('beforeend', modal);
+  updateAuthUI();
+}
+loadIncludes();
+</script>
+<script>
+var inFullScreen = { value: false };
+$(function(){
+    function fullscreenChanged(){
+        var fullscreen =
+            document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement;
+        if(fullscreen){
+            inFullScreen.value = true;
+            $('#draw_container').css({
+                position:'absolute',
+                left:0, top:0, right:0, bottom:0,
+                width:'', height:''
+            });
+            // Resize Ruffle player to fill container
+            var player = document.getElementById('rufflePlayer');
+            if (player) {
+                player.style.width = '100%';
+                player.style.height = '100%';
+            }
+        } else {
+            inFullScreen.value = false;
+            $('#draw_container').css({
+                position:'static',
+                width:'600px',
+                height:'390px'
+            });
+            var player = document.getElementById('rufflePlayer');
+            if (player) {
+                player.style.width = '600px';
+                player.style.height = '390px';
+            }
+            hideRightPanel();
+        }
+    }
+    document.addEventListener("fullscreenchange", fullscreenChanged);
+    document.addEventListener("webkitfullscreenchange", fullscreenChanged);
+    document.addEventListener("mozfullscreenchange", fullscreenChanged);
+});
+
+function toggleFullscreen(){
+    var dc = $('#draw_container')[0];
+    if(!inFullScreen.value){
+        if(dc.requestFullscreen) dc.requestFullscreen();
+        else if(dc.webkitRequestFullscreen) dc.webkitRequestFullscreen();
+        else if(dc.mozRequestFullScreen) dc.mozRequestFullScreen();
+    } else {
+        if(document.exitFullscreen) document.exitFullscreen();
+        else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+        else if(document.mozCancelFullScreen) document.mozCancelFullScreen();
+    }
+}
+
+function hideRightPanel() {
+  $('.rightpanel').fadeOut();
+  var newW = 1000;
+  var newH = Math.round(newW / 2) + 90;
+  $('#draw_container').animate({ width: newW }, 100, function() {
+    var player = document.getElementById('rufflePlayer');
+    if (player) {
+        player.style.width = newW + 'px';
+        player.style.height = newH + 'px';
+    }
+    $('#draw_container').css('height', newH + 'px');
+  });
+}
+</script>
+</head>
+<body>
+<div id="header_placeholder"></div>
+<div id="content_wrap">
+  <div id="content">
+    <h2 id="drawPageTitle">New animation</h2>
+    <span style="display:inline-block; background:#cccccc; padding:10px; vertical-align:top; font-size:0; line-height:0;">
+      <div id="draw_container" style="width:600px; height:390px;">
+        <ruffle-player
+          id="rufflePlayer"
+          src="/swf/draw31en.swf"
+          width="600"
+          height="390"
+          style="display:block; width:600px; height:390px;"
+          quality="high"
+          allowscriptaccess="always"
+          bgcolor="#cccccc"
+        ></ruffle-player>
+      </div>
+    </span>
+    <span class="rightpanel" style="display:inline-block; width:370px; vertical-align:top;">
+      <a href="#" style="font:8pt Tahoma; float:right; color:#000" onclick="hideRightPanel(); return false;">hide</a>
+      <br><br>
+      <a href="/wiki/Editor">Help</a>
+    </span>
+
+    <script>
+    // Update page title if continuing
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('continue')) {
+        document.getElementById('drawPageTitle').textContent = 'Continue animation';
+      }
+    })();
+    </script>
+
+    <div style="clear:both"></div>
+  </div>
+  <div id="footer_placeholder"></div>
+</div>
+</body>
+</html>
