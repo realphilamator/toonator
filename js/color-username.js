@@ -1,14 +1,20 @@
 const RUSSIAN_USERS_CACHE = {};
 
 async function colorRussianUsernames() {
-  const usernameEls = document.querySelectorAll('a.username');
+  // Only select elements that haven't been processed yet
+  const usernameEls = document.querySelectorAll('a.username:not([data-colored])');
   if (!usernameEls.length) return;
+
+  // Mark them immediately to prevent re-processing before async completes
+  usernameEls.forEach(el => el.setAttribute('data-colored', '1'));
+
   const usernames = [...new Set(
     [...usernameEls]
       .map(el => el.textContent.trim())
       .filter(Boolean)
       .filter(u => /^[a-zA-Z0-9_\- ]{1,50}$/.test(u))
   )];
+
   await Promise.all(usernames.map(async (uname) => {
     try {
       if (RUSSIAN_USERS_CACHE[uname] === undefined) {
@@ -44,4 +50,5 @@ function observeAndColorUsernames() {
   const observer = new MutationObserver(() => colorRussianUsernames());
   observer.observe(document.body, { childList: true, subtree: true });
 }
+
 document.addEventListener('DOMContentLoaded', observeAndColorUsernames);
