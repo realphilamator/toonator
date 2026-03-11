@@ -24,8 +24,8 @@ function toonCardHTML(toon, username) {
     frameCount >= 50 ? `<b>${frameCount}</b> frames` : `${frameCount} frames`;
   const commentStr = `<span class="grayb">No comments</span>`;
   const title = escapeHTML(toon.title || "Untitled");
-  const toonUrl = `/pages/toon.html?id=${toon.id}`;
-  const profileUrl = `/pages/profile.html?username=${encodeURIComponent(username)}`;
+  const toonUrl = `/toon/${toon.id}`;
+  const profileUrl = `/user/${encodeURIComponent(username)}`;
   return `
       <div class="toon_preview owned">
         <div class="toon_image">

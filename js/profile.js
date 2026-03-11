@@ -38,7 +38,7 @@ export async function initProfile(username, userId = null) {
   document.getElementById("page_title").textContent =
     `${PROFILE_USERNAME} - Toonator`;
   document.getElementById("profile_username_wrap").href =
-    `/pages/profile.html?username=${encodeURIComponent(PROFILE_USERNAME)}`;
+    `/user/${encodeURIComponent(PROFILE_USERNAME)}`;
   document.getElementById("profile_username").textContent = PROFILE_USERNAME;
 
   // Load stats
@@ -153,10 +153,10 @@ function renderToons(toons, commentCounts) {
           : `<b>${cc}</b> comment${cc === 1 ? "" : "s"}`;
 
       return `<div class="toon_preview toon_preview_${toon.id}">
-      <div class="toon_image"><a href="/pages/toon.html?id=${toon.id}" title="${title}">
-        <img src="https://ytyhhmwnnlkhhpvsurlm.supabase.co/storage/v1/object/public/previews/${toon.id}_100.gif" width="200" height="100" alt="${title}" onerror="this.src='/img/avatar100.gif'"/>
+      <div class=\"toon_image\"><a href=\"/toon/${toon.id}\" title=\"${title}\">
+        <img src=\"https://ytyhhmwnnlkhhpvsurlm.supabase.co/storage/v1/object/public/previews/${toon.id}_100.gif\" width=\"200\" height=\"100\" alt=\"${title}\" onerror=\"this.src='/img/avatar100.gif'\"/>
       </a></div>
-      <div class="toon_name"><a class="link" href="/pages/toon.html?id=${toon.id}">${title}</a></div>
+      <div class=\"toon_name\"><a class=\"link\" href=\"/toon/${toon.id}\">${title}</a></div>
       <div class="toon_tagline">${frameLabel}</div>
       <div class="toon_tagline">${commentLabel}</div>
     </div>`;

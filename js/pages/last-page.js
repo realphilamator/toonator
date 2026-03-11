@@ -77,13 +77,13 @@ function toonCardHTML(toon, username) {
     <div class="toon_preview owned">
       ${medal}
       <div class="toon_image">
-        <a href="/pages/toon.html?id=${toonId}" title="${title}">
-          <img alt="${title}" title="${title}" src="${previewUrl(toonId)}">
+        <a href=\"/toon/${toonId}\" title=\"${title}\">
+          <img alt=\"${title}\" title=\"${title}\" src=\"${previewUrl(toonId)}\">
         </a>
       </div>
-      <div class="toon_name"><a class="link" href="/pages/toon.html?id=${toonId}">${title}</a></div>
-      <div class="toon_tagline">
-        <a href="/pages/profile.html?username=${encodedUsername}" class="username foreign">${escapeHTML(username)}</a>,
+      <div class=\"toon_name\"><a class=\"link\" href=\"/toon/${toonId}\">${title}</a></div>
+      <div class=\"toon_tagline\">
+        <a href=\"/user/${encodedUsername}\" class=\"username foreign\">${escapeHTML(username)}</a>,
         ${frameStr}
       </div>
       <div class="toon_tagline">${commentStr}</div>
@@ -95,7 +95,7 @@ function paginatorHTML(currentPage, totalPages) {
   let html = '<ul class="paginator">';
   const visible = Math.min(5, totalPages);
   for (let i = 1; i <= visible; i++) {
-    html += `<li class="${i === currentPage ? "current" : ""}"><a href="/pages/last.html?page=${i}">${i}</a></li>`;
+    html += `<li class="${i === currentPage ? "current" : ""}"><a href="/last?page=${i}">${i}</a></li>`;
   }
   if (totalPages > visible) html += `<li class="dots">...</li>`;
   html += "</ul>";
@@ -182,10 +182,10 @@ async function loadGoodPlace() {
   document.getElementById("good-place-toon").innerHTML = `
     <div class="toon_preview large owned">
       <img class="toonmedal" src="/img/medal.gif"/>
-      <div class="toon_image"><a href="/pages/toon.html?id=${toonId}" title="${title}"><img alt="${title}" src="${previewUrl(toonId)}"></a></div>
-      <div class="toon_name"><a class="link" href="/pages/toon.html?id=${toonId}">${title}</a></div>
-      <div class="toon_tagline">
-        <a href="/pages/profile.html?username=${encodedUsername}" class="username foreign">${escapeHTML(username)}</a>,
+      <div class=\"toon_image\"><a href=\"/toon/${toonId}\" title=\"${title}\"><img alt=\"${title}\" src=\"${previewUrl(toonId)}\"></a></div>
+      <div class=\"toon_name\"><a class=\"link\" href=\"/toon/${toonId}\">${title}</a></div>
+      <div class=\"toon_tagline\">
+        <a href=\"/user/${encodedUsername}\" class=\"username foreign\">${escapeHTML(username)}</a>,
         ${parseInt(frames.length) || 0} frames
       </div>
       <div class="toon_tagline">${commentStr}</div>
@@ -206,12 +206,12 @@ async function loadLastComments() {
       return `
   <div class="comment ${i % 2 !== 0 ? "gray" : ""} last_comments">
     <div class="avatar">
-      <a href="/pages/toon.html?id=${animId}">
-        <img src="${SUPABASE_URL}/storage/v1/object/public/previews/${animId}_100.gif" width="80"/>
+      <a href=\"/toon/${animId}\">
+        <img src=\"${SUPABASE_URL}/storage/v1/object/public/previews/${animId}_100.gif\" width=\"80\"/>
       </a>
     </div>
-    <div class="head">
-      <a href="/pages/profile.html?username=${encodedUsername}" class="username foreign">${uname}</a>: ${text}
+    <div class=\"head\">
+      <a href=\"/user/${encodedUsername}\" class=\"username foreign\">${uname}</a>: ${text}
     </div>
   </div>`;
     })

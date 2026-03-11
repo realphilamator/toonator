@@ -39,7 +39,7 @@ export async function initProfile(username) {
   // Update page title
   document.getElementById("page_title").textContent = `${username} - Toonator`;
   document.getElementById("profile_username_wrap").href =
-    `/pages/profile.html?username=${encodeURIComponent(username)}`;
+    `/user/${encodeURIComponent(username)}`;
   document.getElementById("profile_username").textContent = username;
 
   // Load stats
@@ -82,7 +82,7 @@ export async function initProfile(username) {
   // Show private messages link if viewing another profile and logged in
   if (currentUser && !isOwnProfile) {
     const pmLink = document.getElementById("private_messages_link");
-    pmLink.href = `/pages/messages.html?username=${encodeURIComponent(username)}`;
+    pmLink.href = `/messages?username=${encodeURIComponent(username)}`;
     pmLink.style.display = "";
   }
 
@@ -211,10 +211,10 @@ function renderToons(toons, commentCounts) {
           : `<b>${cc}</b> comment${cc === 1 ? "" : "s"}`;
 
       return `<div class="toon_preview toon_preview_${toon.id}">
-        <div class="toon_image"><a href="/pages/toon.html?id=${toon.id}" title="${title}">
-          <img src="https://ytyhhmwnnlkhhpvsurlm.supabase.co/storage/v1/object/public/previews/${toon.id}_100.gif" width="200" height="100" alt="${title}" onerror="this.src='/img/avatar100.gif'"/>
+        <div class=\"toon_image\"><a href=\"/toon/${toon.id}\" title=\"${title}\">
+          <img src=\"https://ytyhhmwnnlkhhpvsurlm.supabase.co/storage/v1/object/public/previews/${toon.id}_100.gif\" width=\"200\" height=\"100\" alt=\"${title}\" onerror=\"this.src='/img/avatar100.gif'\"/>
         </a></div>
-        <div class="toon_name"><a class="link" href="/pages/toon.html?id=${toon.id}">${title}</a></div>
+        <div class=\"toon_name\"><a class=\"link\" href=\"/toon/${toon.id}\">${title}</a></div>
         <div class="toon_tagline">${frameLabel}</div>
         <div class="toon_tagline">${commentLabel}</div>
       </div>`;

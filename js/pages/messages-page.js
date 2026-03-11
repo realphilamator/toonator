@@ -38,7 +38,7 @@ export async function initMessages(recipientUsername) {
     document.getElementById("page_title").textContent =
       "Messages with " + recipientUsername;
     document.getElementById("recipient_info").innerHTML =
-      `<p>Conversation with <a href="/pages/profile.html?username=${encodeURIComponent(recipientUsername)}" class="username foreign">${recipientUsername}</a></p>`;
+      `<p>Conversation with <a href=\"/user/${encodeURIComponent(recipientUsername)}\" class=\"username foreign\">${recipientUsername}</a></p>`;
     document.getElementById("message_form").style.display = "block";
 
     // Load messages

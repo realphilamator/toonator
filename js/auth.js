@@ -35,7 +35,7 @@ async function updateAuthUI() {
     const fansLink = document.querySelector(".fans_link");
     const myToonsLink = document.querySelector(".my_toons_link");
 
-    const profileUrl = `/pages/profile.html?username=${escaped}`;
+    const profileUrl = `/user/${escaped}`;
     profileLink.href = profileUrl;
     profileLink.textContent = escaped;
     fansLink.href = `/user/${escaped}/fans/`;
