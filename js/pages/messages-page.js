@@ -1,0 +1,123 @@
+// Messages Page Controller
+import {
+  loadIncludes,
+  getMessages,
+  postMessage,
+  getProfileByUsername,
+} from "/js/api.js";
+import { db } from "/js/config.js";
+
+let currentRecipient = null;
+let currentUser = null;
+
+export async function initMessages(recipientUsername) {
+  // Load includes
+  const { header, footer, donate, modal } = await loadIncludes();
+  if (header) document.getElementById("header_placeholder").innerHTML = header;
+  if (footer) document.getElementById("footer_placeholder").innerHTML = footer;
+  if (donate) document.getElementById("donate_placeholder").innerHTML = donate;
+  if (modal) document.body.insertAdjacentHTML("beforeend", modal);
+  if (window.updateAuthUI) updateAuthUI();
+
+  // Get current user
+  const {
+    data: { user },
+  } = await db.auth.getUser();
+  currentUser = user;
+
+  if (!user) {
+    document.getElementById("message_form").style.display = "none";
+    document.getElementById("recipient_info").innerHTML =
+      '<p style="color:#888888;">You must be <a href="#" onclick="showAuth(\'login\'); return false;">logged in</a> to send messages.</p>';
+    return;
+  }
+
+  // If recipient specified, load conversation
+  if (recipientUsername) {
+    currentRecipient = recipientUsername;
+    const { profile } = await getProfileByUsername(recipientUsername);
+
+    if (!profile) {
+      document.getElementById("page_title").textContent = "User not found";
+      document.getElementById("recipient_info").innerHTML =
+        '<p style="color:#888888;">This user does not exist.</p>';
+      return;
+    }
+
+    document.getElementById("page_title").textContent =
+      "Messages with " + recipientUsername;
+    document.getElementById("recipient_info").innerHTML =
+      `<p>Conversation with <a href="/pages/profile.html?username=${encodeURIComponent(recipientUsername)}" class="username foreign">${recipientUsername}</a></p>`;
+    document.getElementById("message_form").style.display = "block";
+
+    // Load messages
+    await loadMessages();
+  } else {
+    document.getElementById("page_title").textContent = "Feedback";
+    document.getElementById("recipient_info").innerHTML =
+      "<p>Your message will be sent to the website administration.</p>";
+    document.getElementById("message_form").style.display = "block";
+  }
+
+  // Setup send button
+  window.sendMessage = async function () {
+    const text = document.getElementById("message_text").value.trim();
+    if (!text) return;
+
+    const { success, error } = await postMessage(
+      currentRecipient || "admin",
+      text,
+    );
+
+    if (success) {
+      document.getElementById("message_text").value = "";
+      if (currentRecipient) {
+        await loadMessages();
+      } else {
+        document.getElementById("messages_list").innerHTML =
+          '<p style="color:#888888;font-size:10pt;padding:10px;">Message sent!</p>';
+      }
+    } else {
+      alert("Error sending message: " + (error?.message || "Unknown error"));
+    }
+  };
+}
+
+async function loadMessages() {
+  if (!currentRecipient) return;
+
+  const messages = await getMessages(currentRecipient, currentUser?.id);
+
+  const list = document.getElementById("messages_list");
+
+  if (messages.length === 0) {
+    list.innerHTML =
+      '<p style="color:#888888;font-size:10pt;padding:10px;">No messages yet.</p>';
+    return;
+  }
+
+  list.innerHTML = messages
+    .map((msg) => {
+      const isSent = msg.sender_id === currentUser?.id;
+      const sender = msg.sender_username || (isSent ? "You" : currentRecipient);
+      const date = new Date(msg.created_at);
+      const dateStr =
+        date.toLocaleDateString("en-US") +
+        " " +
+        date.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+      return `
+    <div class="comment" style="${isSent ? "text-align:right;" : ""}">
+      <div class="head">
+        <span class="username">${sender}</span>
+        <span class="date"><b>${dateStr}</b></span>
+      </div>
+      <div class="text">${msg.text}</div>
+    </div>
+  `;
+    })
+    .join("");
+}
