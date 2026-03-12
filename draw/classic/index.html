@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Toonator.com - Draw animation online!</title>
 <link rel="shortcut icon" href="/img/favicon-eyes.png"/>
-<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/theme.css">
 <link rel="stylesheet" href="/css/font.css">
 <link rel="stylesheet" href="/css/images.css">
 <link rel="stylesheet" href="/css/register.css">
@@ -48,7 +49,6 @@ $(function(){
                 left:0, top:0, right:0, bottom:0,
                 width:'', height:''
             });
-            // Resize Ruffle player to fill container
             var player = document.getElementById('rufflePlayer');
             if (player) {
                 player.style.width = '100%';
@@ -121,23 +121,15 @@ function hideRightPanel() {
     </span>
 
     <script>
-    // Update page title if continuing
     (function() {
       const params = new URLSearchParams(window.location.search);
-      if (params.get('continue')) {
+      if (params.get('cont')) {
         document.getElementById('drawPageTitle').textContent = 'Continue animation';
+      } else if (params.get('draft')) {
+        document.getElementById('drawPageTitle').textContent = 'Edit draft';
       }
     })();
 
-    // -------------------------------------------------------------------------
-    // ExternalInterface bridge: functions the SWF calls into JS
-    // -------------------------------------------------------------------------
-
-    // toggleFullscreen() is already defined in the <head> above — the SWF calls
-    // it directly when the user presses F inside the editor.
-
-    // m.lockExit('draw') / m.lockExit('draw', false)
-    // SWF calls this to set/clear a "you have unsaved changes" beforeunload guard.
     window.m = window.m || {};
     window.m.lockExit = function(key, lock) {
       if (lock === false) {
@@ -151,10 +143,7 @@ function hideRightPanel() {
       }
     };
 
-    // -------------------------------------------------------------------------
-    // Ruffle init + JS → SWF callback wiring
-    // -------------------------------------------------------------------------
-    window.addEventListener('load', function() {
+    window.addEventListener('load', async function() {
       var ruffle = window.RufflePlayer.newest();
       var player = ruffle.createPlayer();
       player.id = 'rufflePlayer';
@@ -162,6 +151,23 @@ function hideRightPanel() {
       player.style.height = '390px';
       player.style.display = 'block';
       document.getElementById('ruffleContainer').appendChild(player);
+
+      // Read URL params for continue/draft
+      var params = new URLSearchParams(window.location.search);
+      var contId  = params.get('cont') || '';
+      var draftId = params.get('draft')    || '';
+
+      // Get Supabase session JWT to authenticate the upload POST
+      var sessionToken = 'anonymous';
+      try {
+        var { data } = await db.auth.getSession();
+        if (data && data.session && data.session.access_token) {
+          sessionToken = data.session.access_token;
+        }
+      } catch (e) {
+        console.warn('Could not get session for SWF:', e);
+      }
+
       player.load({
         url: '/swf/draw31en.swf',
         quality: 'high',
@@ -169,13 +175,14 @@ function hideRightPanel() {
         backgroundColor: '#ffffff',
         autoplay: 'on',
         unmuteOverlay: 'hidden',
-        volume: 1
+        volume: 1,
+        parameters: {
+          s:     sessionToken,
+          cont:  contId,
+          draft: draftId,
+        }
       });
 
-      // enablePalette() is registered in AS3 via ExternalInterface.addCallback.
-      // Ruffle exposes these on the player element; wire it to window so the
-      // existing rightpanel "Click here to enable palette" link still works.
-      // enablePalette — retries until the SWF has registered the callback via ExternalInterface
       window.enablePalette = function() {
         try {
           player.ruffle().callExposed('enablePalette');

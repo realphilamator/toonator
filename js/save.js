@@ -64,7 +64,7 @@ function loadLocal() {
       const text = await file.text();
       const data = JSON.parse(text);
 
-      // Accept both raw array and {frames:[...]} wrapper
+      // Accept raw array, {frames:[...]} or new {frames:[...], settings:{...}} wrapper
       const loaded = Array.isArray(data)
         ? data
         : (data && Array.isArray(data.frames) ? data.frames : null);

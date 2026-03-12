@@ -5,3 +5,6 @@ server.js
 MIGRATION_GUIDE.md
 STRUCTURE.md
 URL_UPDATE_GUIDE.md
+supabase/functions/legacy-upload
+next/.next
+next/node_modules
