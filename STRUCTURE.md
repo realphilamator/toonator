@@ -5,7 +5,7 @@
 ```
 toonator/
 ├── pages/
-│   ├── profile.html          ← User profile - Load via: /pages/profile.html?username=john
+│   ├── user.html          ← User profile - Load via: /pages/user.html?username=john
 │   └── toon.html             ← Toon viewer - Load via: /pages/toon.html?id=abc123
 │
 ├── js/
@@ -42,8 +42,8 @@ toonator/
 ```
 Old (Serverless)           New (HTML Template)
 ─────────────────────────────────────────────────────────
-/api/user/john       →     /pages/profile.html?username=john
-/user/john           →     /pages/profile.html?username=john
+/api/user/john       →     /pages/user.html?username=john
+/user/john           →     /pages/user.html?username=john
 /api/toon/abc123     →     /pages/toon.html?id=abc123
 /toon/abc123         →     /pages/toon.html?id=abc123
 ```
@@ -58,7 +58,7 @@ For clean URLs (without query params), configure server rewrites:
   "rewrites": [
     {
       "source": "/user/:username",
-      "destination": "/pages/profile.html?username=:username"
+      "destination": "/pages/user.html?username=:username"
     },
     { "source": "/toon/:id", "destination": "/pages/toon.html?id=:id" }
   ]
@@ -69,7 +69,7 @@ For clean URLs (without query params), configure server rewrites:
 
 ```nginx
 location /user/(.+) {
-  rewrite ^/user/(.+)$ /pages/profile.html?username=$1 last;
+  rewrite ^/user/(.+)$ /pages/user.html?username=$1 last;
 }
 
 location /toon/(.+) {
@@ -107,7 +107,7 @@ location /toon/(.+) {
    - Page calculation utilities
    - URL parameter parsing
 
-4. **`/pages/profile.html`** (Clean HTML)
+4. **`/pages/user.html`** (Clean HTML)
    - No template strings
    - Simple layout markup
    - Only imports logic via modules
@@ -124,7 +124,7 @@ location /toon/(.+) {
 
 ## Import Examples
 
-### Profile Page (pages/profile.html)
+### Profile Page (pages/user.html)
 
 ```javascript
 import { initProfile } from "/js/profile.js";
@@ -184,7 +184,7 @@ Populate DOM with data
 
 The old API route `/api/user/:username` still works:
 
-- Redirects to `/pages/profile.html?username=:username`
+- Redirects to `/pages/user.html?username=:username`
 - Allows gradual migration of links
 
 Once all links are updated, you can remove:

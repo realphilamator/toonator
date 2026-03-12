@@ -13,9 +13,9 @@ Use this file as a reference when updating links throughout your application.
 <a href="/user/${username}/">View Profile</a>
 
 <!-- NEW -->
-<a href="/pages/profile.html?username=john">John's Profile</a>
-<a href="/pages/profile.html?username=john">John's Profile</a>
-<a href="/pages/profile.html?username=${encodeURIComponent(username)}"
+<a href="/pages/user.html?username=john">John's Profile</a>
+<a href="/pages/user.html?username=john">John's Profile</a>
+<a href="/pages/user.html?username=${encodeURIComponent(username)}"
   >View Profile</a
 >
 ```
@@ -46,7 +46,7 @@ function getProfileURL(username) {
 
 // BETTER - With encoding
 function getProfileURL(username) {
-  return `/pages/profile.html?username=${encodeURIComponent(username)}`;
+  return `/pages/user.html?username=${encodeURIComponent(username)}`;
 }
 ```
 
@@ -75,7 +75,7 @@ function renderPaginator(totalPages, username, currentPage) {
 
 // NEW - Using query parameters
 function renderPaginator(totalPages, username, currentPage) {
-  items += `<li><a href="/pages/profile.html?username=${encodeURIComponent(username)}&page=${i}">${i}</a></li>`;
+  items += `<li><a href="/pages/user.html?username=${encodeURIComponent(username)}&page=${i}">${i}</a></li>`;
 }
 ```
 
@@ -143,7 +143,7 @@ const page = parseInt(getURLParam("page") || "1");
 
 ```
 Find:    /user/(\w+)
-Replace: /pages/profile.html?username=$1
+Replace: /pages/user.html?username=$1
 Regex:   true
 ```
 
@@ -172,14 +172,14 @@ Regex:   true
   "rewrites": [
     {
       "source": "/user/:username",
-      "destination": "/pages/profile.html?username=:username"
+      "destination": "/pages/user.html?username=:username"
     },
     { "source": "/toon/:id", "destination": "/pages/toon.html?id=:id" }
   ],
   "redirects": [
     {
       "source": "/api/user/:username",
-      "destination": "/pages/profile.html?username=:username",
+      "destination": "/pages/user.html?username=:username",
       "permanent": false
     },
     {
@@ -195,11 +195,11 @@ Regex:   true
 
 ```nginx
 # Rewrites (transparent - URL doesn't change in browser)
-rewrite ^/user/([^/]+)/?$ /pages/profile.html?username=$1 last;
+rewrite ^/user/([^/]+)/?$ /pages/user.html?username=$1 last;
 rewrite ^/toon/([^/]+)/?$ /pages/toon.html?id=$1 last;
 
 # Or redirects (browser sees the change)
-redirect 301 /api/user/(.*) /pages/profile.html?username=$1;
+redirect 301 /api/user/(.*) /pages/user.html?username=$1;
 redirect 301 /api/toon/(.*) /pages/toon.html?id=$1;
 ```
 
@@ -207,9 +207,9 @@ redirect 301 /api/toon/(.*) /pages/toon.html?id=$1;
 
 ```apache
 RewriteEngine On
-RewriteRule ^user/([^/]+)/?$ /pages/profile.html?username=$1 [L]
+RewriteRule ^user/([^/]+)/?$ /pages/user.html?username=$1 [L]
 RewriteRule ^toon/([^/]+)/?$ /pages/toon.html?id=$1 [L]
-RewriteRule ^api/user/(.*) /pages/profile.html?username=$1 [R=301,L]
+RewriteRule ^api/user/(.*) /pages/user.html?username=$1 [R=301,L]
 RewriteRule ^api/toon/(.*) /pages/toon.html?id=$1 [R=301,L]
 ```
 
@@ -243,7 +243,7 @@ element.dataset.toonId; // "abc123" const username = element.dataset.username;
 
 <!-- NEW -->
 <div class="user-card">
-  <a href="/pages/profile.html?username=${encodeURIComponent(user.username)}"
+  <a href="/pages/user.html?username=${encodeURIComponent(user.username)}"
     >${user.username}</a
   >
   <img
@@ -273,7 +273,7 @@ element.dataset.toonId; // "abc123" const username = element.dataset.username;
   </a>
   <a href="/pages/toon.html?id=${toon.id}">${toon.title}</a>
   <a
-    href="/pages/profile.html?username=${encodeURIComponent(toon.author_username)}"
+    href="/pages/user.html?username=${encodeURIComponent(toon.author_username)}"
     >by ${toon.author_username}</a
   >
 </div>
@@ -291,7 +291,7 @@ element.dataset.toonId; // "abc123" const username = element.dataset.username;
 <!-- NEW -->
 <nav class="breadcrumb">
   <a href="/">Home</a> &gt;
-  <a href="/pages/profile.html?username=${encodeURIComponent(username)}"
+  <a href="/pages/user.html?username=${encodeURIComponent(username)}"
     >${username}</a
   >
 </nav>
@@ -303,15 +303,15 @@ element.dataset.toonId; // "abc123" const username = element.dataset.username;
 
 ```javascript
 // ❌ WRONG - Can break with special characters
-const url = `/pages/profile.html?username=${username}`;
+const url = `/pages/user.html?username=${username}`;
 
 // ✅ CORRECT - Safe with special characters
-const url = `/pages/profile.html?username=${encodeURIComponent(username)}`;
+const url = `/pages/user.html?username=${encodeURIComponent(username)}`;
 
 // ✅ EXAMPLE - "John Doe" becomes "John%20Doe"
 const username = "John Doe";
-const url = `/pages/profile.html?username=${encodeURIComponent(username)}`;
-// Result: /pages/profile.html?username=John%20Doe
+const url = `/pages/user.html?username=${encodeURIComponent(username)}`;
+// Result: /pages/user.html?username=John%20Doe
 ```
 
 ### Parsing Parameters
@@ -337,7 +337,7 @@ const page = parseInt(getParam("page") || "1");
 ```javascript
 // js/urls.js
 export function profileURL(username) {
-  return `/pages/profile.html?username=${encodeURIComponent(username)}`;
+  return `/pages/user.html?username=${encodeURIComponent(username)}`;
 }
 
 export function toonURL(id) {

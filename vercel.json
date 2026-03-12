@@ -19,19 +19,19 @@
     { "source": "/toon/:id/", "destination": "/pages/toon.html?id=:id" },
     {
       "source": "/user/:username",
-      "destination": "/pages/profile.html?username=:username"
+      "destination": "/pages/user.html?username=:username"
     },
     {
       "source": "/user/:username/",
-      "destination": "/pages/profile.html?username=:username"
+      "destination": "/pages/user.html?username=:username"
     },
     {
       "source": "/user/:username/:page",
-      "destination": "/pages/profile.html?username=:username"
+      "destination": "/pages/user.html?username=:username"
     },
     {
       "source": "/user/:username/:page/",
-      "destination": "/pages/profile.html?username=:username"
+      "destination": "/pages/user.html?username=:username"
     },
     { "source": "/last", "destination": "/pages/last.html" },
     { "source": "/last/", "destination": "/pages/last.html" },

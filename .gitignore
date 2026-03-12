@@ -1,3 +1,7 @@
 .vercel
 .env*.local
 .vscode
+server.js
+MIGRATION_GUIDE.md
+STRUCTURE.md
+URL_UPDATE_GUIDE.md

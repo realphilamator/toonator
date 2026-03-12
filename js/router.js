@@ -21,7 +21,7 @@
   // /user/:username
   if (parts[0] === "user" && parts[1]) {
     const username = encodeURIComponent(parts[1]);
-    return loadPage(`/pages/profile.html?username=${username}`);
+    return loadPage(`/pages/user.html?username=${username}`);
   }
 
   // /last

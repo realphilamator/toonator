@@ -8,7 +8,7 @@ Your Toonator application has been migrated from a serverless API-based structur
 
 ```
 /pages
-├── profile.html              # User profile page
+├── user.html              # User profile page
 └── toon.html                 # Individual toon viewer
 
 /js
@@ -57,11 +57,11 @@ Your Toonator application has been migrated from a serverless API-based structur
 ### Profile Pages
 
 **Old:** `/api/user/[username]` or `/user/[username]`  
-**New:** `/pages/profile.html?username=[username]`
+**New:** `/pages/user.html?username=[username]`
 
 For cleaner URLs, you can configure your server to rewrite:
 
-- `/user/[username]` → `/pages/profile.html?username=[username]`
+- `/user/[username]` → `/pages/user.html?username=[username]`
 
 ### Toon Pages
 
@@ -81,7 +81,7 @@ If using Vercel, update `vercel.json` to add rewrites:
   "rewrites": [
     {
       "source": "/user/:username",
-      "destination": "/pages/profile.html?username=:username"
+      "destination": "/pages/user.html?username=:username"
     },
     {
       "source": "/toon/:id",
@@ -163,7 +163,7 @@ export const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 ## Migration Checklist
 
 - [ ] Update internal links from `/toon/[id]` to `/pages/toon.html?id=[id]`
-- [ ] Update internal links from `/user/[username]` to `/pages/profile.html?username=[username]`
+- [ ] Update internal links from `/user/[username]` to `/pages/user.html?username=[username]`
 - [ ] Configure server rewrites (Vercel/Nginx/etc.) for clean URLs
 - [ ] Test profile pages with pagination
 - [ ] Test toon pages with comments, likes, and continue functionality
@@ -177,7 +177,7 @@ export const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 ### Profile Page
 
 ```
-http://localhost:3000/pages/profile.html?username=testuser
+http://localhost:3000/pages/user.html?username=testuser
 ```
 
 ### Toon Page
@@ -197,7 +197,7 @@ http://localhost:3000/pages/toon.html?id=toon123
 **Solution:** Update all internal links to use new URL patterns:
 
 - Change `/toon/123` to `/pages/toon.html?id=123`
-- Change `/user/username` to `/pages/profile.html?username=username`
+- Change `/user/username` to `/pages/user.html?username=username`
 
 ### Issue: Avatar images not loading
 
