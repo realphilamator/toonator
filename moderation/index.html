@@ -126,10 +126,9 @@ async function loadUserToons(userId, username) {
   list.innerHTML = "Loading...";
   section.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  // ⚠️ Update table/column names to match your schema
   const { data, error } = await db
-    .from("toons")
-    .select("id,title,created_at")
+    .from("animations")
+    .select("id,title,created_at,is_draft")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(50);
@@ -158,8 +157,8 @@ async function searchToonById() {
   section.scrollIntoView({ behavior: "smooth", block: "start" });
 
   const { data, error } = await db
-    .from("toons")
-    .select("id,title,created_at,user_id")
+    .from("animations")
+    .select("id,title,created_at,user_id,is_draft")
     .eq("id", id)
     .limit(1);
 
@@ -176,8 +175,8 @@ function renderToonList(toons) {
   list.innerHTML = toons.map(t => `
     <div class="mp-toon-row" id="toon-${escapeHTML(String(t.id))}">
       <span class="mp-toon-title">${escapeHTML(t.title || "Untitled")}</span>
+      ${t.is_draft ? '<span class="grayb small">[draft]</span>' : ''}
       <span class="grayb small">${t.created_at ? new Date(t.created_at).toLocaleDateString() : "—"}</span>
-      <span class="grayb small">id: ${escapeHTML(String(t.id))}</span>
       <button onclick="deleteToon('${escapeHTML(String(t.id))}')">Delete</button>
     </div>
   `).join("");
@@ -186,8 +185,7 @@ function renderToonList(toons) {
 async function deleteToon(toonId) {
   if (!confirm("Delete toon " + toonId + "? This cannot be undone.")) return;
 
-  // ⚠️ Update table name if different
-  const { error } = await db.from("toons").delete().eq("id", toonId);
+  const { error } = await db.from("animations").delete().eq("id", toonId);
 
   if (error) { showStatus("Error: " + error.message, false); return; }
 
