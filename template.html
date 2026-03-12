@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <!-- Page Title -->
+  <title>{{TITLE}}</title>
+
+  <!-- Favicon -->
+  <link rel="shortcut icon" href="/img/favicon-eyes.png" />
+
+  <!-- Global Styles -->
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="/css/font.css" />
+  <link rel="stylesheet" href="/css/images.css" />
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const { createClient } = supabase;
+    const db = createClient(
+      "https://ytyhhmwnnlkhhpvsurlm.supabase.co",
+      "YOUR_PUBLIC_ANON_KEY"
+    );
+  </script>
+
+  <!-- Global Scripts -->
+  <script src="/js/auth.js"></script>
+  <script type="module" src="/js/color-username.js"></script>
+
+  <!-- SEO -->
+  <meta name="description" content="{{DESCRIPTION}}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{{URL}}" />
+  <meta property="og:title" content="{{TITLE}}" />
+  <meta property="og:description" content="{{DESCRIPTION}}" />
+  <meta property="og:image" content="/img/toonator320.png" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{{TITLE}}" />
+  <meta name="twitter:description" content="{{DESCRIPTION}}" />
+  <meta name="twitter:image" content="/img/toonator320.png" />
+</head>
+
+<body>
+
+  <!-- Shared UI -->
+  <div id="donate_placeholder"></div>
+  <div id="header_placeholder"></div>
+
+  <div id="content_wrap">
+
+    <!-- PAGE CONTENT GOES HERE -->
+     <div id="content">
+        <h1>PLACEHOLDER</h1>
+    </div>
+    <div id="footer_placeholder"></div>
+
+  </div>
+
+  <!-- Optional page script -->
+  <script type="module">
+  import { loadIncludes } from "/js/utils/includes.js";
+  loadIncludes();
+</script>
+
+
+</body>
+</html>
