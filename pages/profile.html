@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title id="page_title">Settings - Toonator</title>
+    <link rel="shortcut icon" href="/img/favicon-eyes.png" />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/css/font.css" />
+    <link rel="stylesheet" href="/css/images.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/config.js" type="module"></script>
+    <script src="/js/auth.js"></script>
+    <style>
+      /* ── Settings page overrides ── */
+
+      .settings-panel {
+        font: 10pt Arial;
+        padding: 4px 0 0 10px;
+      }
+
+      .settings-panel h1 {
+        text-align: left;
+        font: bold 18pt ToonatorFont, "Comic Sans MS";
+        margin-bottom: 10px;
+        border: none;
+      }
+
+      .settings-section {
+        margin-bottom: 14px;
+      }
+
+      .settings-section h2 {
+        font: bold 12pt Arial;
+        text-align: left;
+        border: none;
+        margin: 0 0 2px 0;
+        padding: 0;
+      }
+
+      .section-divider {
+        border: none;
+        border-top: 1px solid #cccccc;
+        margin: 0 0 6px 0;
+      }
+
+      .settings-field {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 4px 0 4px 16px;
+        font: 10pt Arial;
+      }
+
+      .settings-field .field-label {
+        min-width: 68px;
+      }
+
+      .radio-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .radio-group label {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        cursor: pointer;
+        font: 10pt Arial;
+      }
+
+      input[type="text"],
+      select {
+        font: 10pt Arial;
+        border: 1px solid #aaaaaa;
+        padding: 2px 4px;
+        background: #fff;
+      }
+
+      .birth-input {
+        width: 100px;
+      }
+
+      .settings-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin: 3px 0 3px 16px;
+        font: 10pt Arial;
+        color: #333333;
+      }
+
+      .settings-checkbox label {
+        cursor: pointer;
+      }
+
+      .rank-field {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 4px 0 4px 16px;
+        font: 10pt Arial;
+      }
+
+      .rank-field select {
+        width: 120px;
+      }
+
+      .status-line {
+        margin: 4px 0 2px 16px;
+        font: 10pt Arial;
+      }
+
+      .status-line .status-name {
+        font-weight: bold;
+      }
+
+      .status-free {
+        margin: 1px 0 3px 16px;
+        font: 10pt Arial;
+        color: #333;
+      }
+
+      .nick-note {
+        margin: 0 0 6px 16px;
+        font: 10pt Arial;
+        color: #333333;
+      }
+
+      .nick-preview {
+        margin: 0 0 5px 16px;
+        font: 11pt ToonatorFont, "Comic Sans MS";
+        font-weight: bold;
+      }
+
+      .color-palette {
+        margin: 0 0 8px 16px;
+      }
+
+      .palette-grid {
+        display: grid;
+        grid-template-columns: repeat(32, 20px);
+        gap: 2px;
+        max-width: 672px;
+      }
+
+      .swatch {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        border: none;
+        box-sizing: border-box;
+      }
+
+      .swatch:hover {
+        outline: 2px solid #000;
+        position: relative;
+        z-index: 2;
+      }
+
+      .swatch.selected {
+        outline: 2px solid #000;
+        position: relative;
+        z-index: 2;
+      }
+
+      .mod-helper-note {
+        margin: 0 0 4px 16px;
+        font: 10pt Arial;
+        color: #333333;
+        max-width: 580px;
+      }
+
+      #rank_promotion_section {
+        display: none;
+      }
+
+      .promotion-info {
+        margin: 0 0 6px 16px;
+        font: 10pt Arial;
+        color: #333;
+        max-width: 580px;
+        line-height: 1.5;
+      }
+
+      .promotion-info .rank-label {
+        font-weight: bold;
+      }
+
+      .promotion-cooldown {
+        margin: 3px 0 6px 16px;
+        font: 10pt Arial;
+        color: #888888;
+        font-style: italic;
+      }
+
+      .promotion-textarea {
+        display: block;
+        margin: 0 0 6px 16px;
+        width: 560px;
+        height: 70px;
+        font: 10pt Arial;
+        border: 1px solid #cccccc;
+        padding: 4px;
+        resize: vertical;
+      }
+
+      .promotion-btn {
+        margin-left: 16px;
+      }
+
+      #alt_rank_section {
+        display: none;
+      }
+
+      .alt-rank-note {
+        margin: 3px 0 0 16px;
+        font: 10pt Arial;
+        color: #555555;
+        font-style: italic;
+      }
+
+      .submit-row {
+        margin-top: 10px;
+        border-top: 1px solid #cccccc;
+        padding-top: 8px;
+      }
+
+      #settings_msg,
+      #promotion_msg {
+        display: none;
+        padding: 4px 10px;
+        margin-bottom: 6px;
+        font: 10pt Arial;
+        border: 1px solid #aaa;
+        max-width: 500px;
+      }
+
+      #promotion_msg { margin: 5px 0 0 16px; }
+      .ok  { border-color: #4a4 !important; color: #292; background: #f0fff0; }
+      .err { border-color: #a44 !important; color: #922; background: #fff0f0; }
+
+      .settings-nav {
+        margin-top: 10px;
+      }
+
+      /* Layout: matches original screenshot proportions */
+      .userprofile .content_right {
+        float: left;
+        width: 260px !important;
+        box-sizing: border-box;
+      }
+
+      .userprofile .content_left {
+        float: left;
+        width: 700px !important;
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+
+      /* Override global h3 so sidebar username isn't oversized */
+      .content_right h3 {
+        font-size: 16pt;
+        margin-bottom: 4px;
+      }
+
+      /* Prevent settings panel padding from causing overflow */
+      .settings-panel {
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="header_placeholder"></div>
+    <div id="content_wrap">
+      <div id="content">
+        <div class="userprofile">
+
+          <!-- SIDEBAR -->
+          <div class="content_right">
+            <div class="center">
+              <h3>
+                <a id="sidebar_username" class="username" href="#"></a>
+              </h3>
+              <div class="center">
+                <img id="sidebar_avatar" src="/img/avatar100.gif" class="p100" />
+              </div>
+            </div>
+            <nav class="settings-nav">
+              <ul class="leftmenu">
+                <li><a id="my_page_link" href="#">My page</a></li>
+                <li><a href="/settings" class="selected">Settings</a></li>
+                <li><a href="/change-password">Change password</a></li>
+                <li><a href="/social-networks">Social networks</a></li>
+                <li><a href="/blacklist">Blacklist</a></li>
+              </ul>
+            </nav>
+          </div>
+
+          <!-- MAIN PANEL -->
+          <div class="content_left settings-panel">
+            <h1>Settings</h1>
+            <div id="settings_msg"></div>
+
+            <!-- ABOUT ME -->
+            <div class="settings-section">
+              <h2>About me</h2>
+              <hr class="section-divider" />
+
+              <div class="settings-field">
+                <span class="field-label">Gender:</span>
+                <div class="radio-group">
+                  <label><input type="radio" name="gender" id="gender_boy" value="boy" checked /> boy</label>
+                  <label><input type="radio" name="gender" id="gender_girl" value="girl" /> girl</label>
+                </div>
+              </div>
+
+              <div class="settings-field">
+                <span class="field-label">Birth date:</span>
+                <input type="text" id="birth_date" class="birth-input" placeholder="DD.MM.YYYY" />
+                <select id="show_birthdate">
+                  <option value="show">Show my datebirth</option>
+                  <option value="hide">Hide my datebirth</option>
+                  <option value="age_only">Show age only</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- RANK AND STATUS -->
+            <div class="settings-section">
+              <h2>Rank and status</h2>
+              <hr class="section-divider" />
+
+              <div class="rank-field">
+                <span>Rank:</span>
+                <select id="rank_select" disabled title="Rank is set automatically by moderators">
+                  <option value="unknown_animal">Unknown animal</option>
+                  <option value="archeologist">Archeologist</option>
+                  <option value="passer" selected>Passer</option>
+                  <option value="animator">Animator</option>
+                </select>
+                <a href="/wiki/ranks" target="_blank">More info about ranks.</a>
+              </div>
+
+              <div id="alt_rank_section">
+                <div class="rank-field">
+                  <span>Display as:</span>
+                  <select id="alt_rank_select"></select>
+                </div>
+                <div class="alt-rank-note">
+                  As a Boyar you can choose an alternative display name for your rank.
+                </div>
+              </div>
+
+              <div class="settings-checkbox">
+                <input type="checkbox" id="hide_rank" />
+                <label for="hide_rank">Dont show rank on my page</label>
+              </div>
+
+              <div class="status-line">
+                Status: <span class="status-name" id="status_value"></span>.
+                <a href="/wiki/statuses" target="_blank">More info about status.</a>
+              </div>
+
+              <div class="status-free" id="status_free_date"></div>
+            </div>
+
+            <!-- RANK PROMOTION -->
+            <div class="settings-section" id="rank_promotion_section">
+              <h2>Apply for rank promotion</h2>
+              <hr class="section-divider" />
+              <div class="promotion-info">
+                Your current rank is <span class="rank-label" id="promo_rank_name">Archeologist</span>.
+                <span id="promo_rank_desc"></span>
+                You can submit a promotion request, but no more than <b>twice per month</b>.
+              </div>
+              <div class="promotion-cooldown" id="promo_cooldown"></div>
+              <textarea
+                class="promotion-textarea"
+                id="promotion_text"
+                placeholder="Tell us about yourself and link your best toons..."
+              ></textarea>
+              <button type="button" class="promotion-btn" id="promotion_submit">Send promotion request</button>
+              <div id="promotion_msg"></div>
+            </div>
+
+            <!-- NICK COLOR -->
+            <div class="settings-section">
+              <h2>Nick color</h2>
+              <hr class="section-divider" />
+              <div class="nick-note">Color of the nickname can be changed only one time in 24 hours.</div>
+              <div class="nick-preview">
+                <span id="nick_preview" style="color:#005500;"></span>
+              </div>
+              <div class="color-palette">
+                <div class="palette-grid" id="palette_grid"></div>
+              </div>
+            </div>
+
+            <!-- MODERATOR HELPER -->
+            <div class="settings-section">
+              <h2>Moderator helper</h2>
+              <hr class="section-divider" />
+              <div class="mod-helper-note">
+                You can help moderators to hide bad toons. You will receive spooders for this help.
+                <a href="/wiki/moderator-helpers" target="_blank">More about moderator helpers</a>.
+              </div>
+              <div class="settings-checkbox" style="margin-top:4px;">
+                <input type="checkbox" id="mod_helper" checked />
+                <label for="mod_helper">I want to help!</label>
+              </div>
+            </div>
+
+            <!-- SUBMIT -->
+            <div class="submit-row">
+              <button id="settings_submit" type="button">Submit</button>
+            </div>
+          </div>
+
+        </div>
+        <div style="clear:both"></div>
+      </div>
+      <div id="donate_placeholder"></div>
+      <div id="footer_placeholder"></div>
+    </div>
+
+    <script type="module">
+      import { initI18n } from '/js/i18n.js';
+      import { initSettings } from '/js/pages/profile-page.js';
+      await initI18n('settings').catch(() => {});
+      initSettings();
+    </script>
+
+  </body>
+</html>
